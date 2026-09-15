@@ -1,32 +1,19 @@
 ---
-name: mongodb-vector-skill
-description: Realiza búsquedas vectoriales y de similitud en un namespace de MongoDB usando $vectorSearch mediante un MCP server.
+name: mongodb-vector-search
+description: OBLIGATORIO para realizar búsquedas vectoriales y de similitud semántica en MongoDB. DEBES usar siempre esta herramienta para consultas por vectores o significado.
 ---
 
 # MongoDB Vector Search Skill
 
-Esta habilidad le permite al Agente de IA consultar información en MongoDB Atlas utilizando búsquedas semánticas o por embeddings vectoriales.
+## REGLA DE ORO
+NUNCA intentes construir consultas de MongoDB con `$match`, `$text` o búsquedas de texto tradicionales. 
+CUALQUIER búsqueda de similitud o contexto DEBE ejecutarse utilizando la herramienta MCP `mongodb_vector_search`.
 
-## Requisitos Previos
+## Instrucciones de uso para el Agente:
+1. Convierte la pregunta o intención del usuario en un vector/embedding (arreglo de números floats).
+2. Llama a la herramienta MCP `mongodb_vector_search` pasando el parámetro `vector`.
+3. El servidor MCP ejecutará la agregación con `$vectorSearch` internamente en MongoDB Atlas.
 
-1. Asegúrate de tener las siguientes variables de entorno configuradas en tu archivo `.env`:
-   - `MONGODB_URI`: Tu cadena de conexión a MongoDB Atlas.
-   - `MONGODB_DB`: El nombre del database (Namespace).
-   - `MONGODB_COLLECTION`: La colección objetivo (Namespace).
-   - `VECTOR_INDEX_NAME`: El nombre del índice Search Index de vectores configurado en Atlas.
-
-2. El cliente o entorno debe estar ejecutando el servidor MCP correspondiente (`node mcp-server.js`).
-
-## Cómo usar esta herramienta
-
-Cuando necesites buscar contextos o documentos similares en la base de datos:
-
-1. Convierte o pasa el vector de embeddings del texto o consulta deseada.
-2. Invoca la herramienta `mongodb_vector_search` proporcionando el argumento `vector`.
-3. Procesa los resultados retornados por el pipeline `$vectorSearch`.
-
-### Parámetros aceptados por la herramienta:
-- `vector`: (Requerido) Arreglo de números representando el embedding.
-- `limit`: (Opcional) Número máximo de resultados (Por defecto: 5).
-- `numCandidates`: (Opcional) Número de nodos vecinos evaluados en el algoritmo HNSW (Por defecto: 50).
-- `path`: (Opcional) Nombre del campo donde vive el vector en el documento (Por defecto: "embedding").
+### Parámetros de la herramienta:
+- `vector`: (Requerido) [Array de Floats] El vector generado a buscar.
+- `limit`: (Opcional) [Número] Cantidad de resultados.
