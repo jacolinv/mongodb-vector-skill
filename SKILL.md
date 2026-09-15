@@ -1,9 +1,7 @@
 ---
 name: mongodb-vector-search
-description: OBLIGATORIO para realizar búsquedas vectoriales y de similitud semántica en MongoDB. DEBES usar siempre esta herramienta para consultas por vectores o significado.
+description: Realiza búsquedas vectoriales y de similitud en un namespace de MongoDB usando $vectorSearch mediante un MCP server.
 ---
-
-# MongoDB Vector Search Skill
 
 ## REGLA DE ORO
 NUNCA intentes construir consultas de MongoDB con `$match`, `$text` o búsquedas de texto tradicionales. 
