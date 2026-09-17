@@ -12,11 +12,11 @@ dotenv.config();
 const MONGO_URI = process.env.MONGODB_URI;
 const DB_NAME = process.env.MONGODB_DB || "knowledgeVectors";
 const COLLECTION_NAME = process.env.MONGODB_COLLECTION || "knowledge";
-const VECTOR_INDEX_NAME = process.env.VECTOR_INDEX_NAME || "vector_index";
+const INDEX_NAME = process.env.VECTOR_INDEX_NAME || "vector_index";
 
 const server = new Server(
   {
-    name: "mongodb-vector-search",
+    name: "mongodb-vector-mcp",
     version: "1.0.0",
   },
   {
@@ -26,104 +26,116 @@ const server = new Server(
   }
 );
 
-// Define tools
+// Define las herramientas disponibles para el Agente
 server.setRequestHandler(ListToolsRequestSchema, async () => {
   return {
     tools: [
       {
         name: "mongodb_vector_search",
-        // Descripción hiper-directa para obligar al LLM
-        description: "ÚNICA HERRAMIENTA PERMITIDA para realizar búsquedas semánticas y por vectores en MongoDB Atlas usando $vectorSearch.",
+        description:
+          "Realiza una búsqueda vectorial usando el pipeline aggregate de MongoDB Atlas Vector Search.",
         inputSchema: {
           type: "object",
           properties: {
             vector: {
               type: "array",
               items: { type: "number" },
-              description: "El arreglo de floats que representa el embedding de la consulta.",
+              description: "Arreglo de floats (embeddings) para la consulta.",
             },
             limit: {
               type: "number",
-              description: "Número máximo de documentos a retornar.",
-              default: 5
-            }
+              description: "Cantidad máxima de resultados a retornar.",
+              default: 5,
+            },
+            numCandidates: {
+              type: "number",
+              description: "Candidatos a considerar en la búsqueda approx.",
+              default: 50,
+            },
+            path: {
+              type: "string",
+              description: "Campo del documento que contiene el vector/embedding.",
+              default: "embedding",
+            },
           },
-          required: ["vector"], // Forzar que 'vector' sea obligatorio
+          required: ["vector"],
         },
       },
     ],
   };
 });
 
-// Implement tool execution
+// Maneja la ejecución de la herramienta
 server.setRequestHandler(CallToolRequestSchema, async (request) => {
-  if (request.params.name !== "mongodb_vector_search") {
-    throw new Error(`Tool not found: ${request.params.name}`);
-  }
+  if (request.params.name === "mongodb_vector_search") {
+    const { vector, limit = 5, numCandidates = 50, path = "embedding" } = request.params.arguments;
+    let client;
 
-  const { vector, limit = 5 } = request.params.arguments;
+    try {
+      client = new MongoClient(MONGO_URI);
+      await client.connect();
+      const db = client.db(DB_NAME);
+      const collection = db.collection(COLLECTION_NAME);
 
-  if (!vector || !Array.isArray(vector)) {
-    throw new Error("El parámetro 'vector' es requerido y debe ser un arreglo numérico.");
-  }
-
-  const client = new MongoClient(MONGO_URI);
-  try {
-    await client.connect();
-    const db = client.db(DB_NAME);
-    const collection = db.collection(COLLECTION_NAME);
-
-    const pipeline = [
-      {
-        $vectorSearch: {
-          index: VECTOR_INDEX_NAME,
-          path: "embedding", // Cambia esto si el campo del vector en tus documentos tiene otro nombre
-          queryVector: vector,
-          numCandidates: Math.max(100, limit * 10), // numCandidates debe ser mayor que limit
-          limit: limit
+      // Agregación con operador $vectorSearch de MongoDB Atlas
+      const pipeline = [
+        {
+          $vectorSearch: {
+            index: INDEX_NAME,
+            path: path,
+            queryVector: vector,
+            numCandidates: numCandidates,
+            limit: limit,
+          },
+        },
+        {
+          $project: {
+            _id: 1,
+            title: 1,
+            content: 1,
+            score: { $meta: "vectorSearchScore" },
+          },
+        },
+        {
+            $sort:{
+                score:-1
+            }
         }
-      },
-      {
-        $project: {
-          embedding: 0, // Excluimos el vector gigante en la respuesta para ahorrar memoria
-          score: { $meta: "vectorSearchScore" } // Para saber el grado de similitud
-        }
+      ];
+
+      const results = await collection.aggregate(pipeline).toArray();
+
+      return {
+        content: [
+          {
+            type: "text",
+            text: JSON.stringify(results, null, 2),
+          },
+        ],
+      };
+    } catch (error) {
+      return {
+        content: [
+          {
+            type: "text",
+            text: `Error al ejecutar vectorSearch en MongoDB: ${error.message}`,
+          },
+        ],
+        isError: true,
+      };
+    } finally {
+      if (client) {
+        await client.close();
       }
-    ];
-
-    const results = await collection.aggregate(pipeline).toArray();
-
-    return {
-      content: [
-        {
-          type: "text",
-          text: JSON.stringify(results, null, 2),
-        },
-      ],
-    };
-  } catch (error) {
-    console.error("Error ejecutando $vectorSearch:", error);
-    return {
-      content: [
-        {
-          type: "text",
-          text: `Error ejecutando búsqueda vectorial: ${error.message}`,
-        },
-      ],
-      isError: true,
-    };
-  } finally {
-    await client.close();
+    }
   }
+
+  throw new Error(`Herramienta no encontrada: ${request.params.name}`);
 });
 
 async function run() {
   const transport = new StdioServerTransport();
   await server.connect(transport);
-  console.error("MongoDB Vector Search MCP Server running on stdio");
 }
 
-run().catch((error) => {
-  console.error("Fatal error:", error);
-  process.exit(1);
-});
+run().catch(console.error);

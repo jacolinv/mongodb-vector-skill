@@ -1,15 +1,15 @@
 {
-  "name": "mongodb-vector-skill",
+  "name": "@jacolinv/mongodb-vector-skill",
   "version": "1.0.0",
-  "description": "",
+  "description": "MCP server and ingestion helpers for MongoDB Atlas Vector Search",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "node --check mcp-server.js && python3 -m compileall -q chunker.py embeddings.py loaders.py mongodb.py ingest.py"
   },
   "keywords": [],
-  "author": "",
+  "author": "jacolinv",
   "license": "ISC",
-  "type": "commonjs",
+  "type": "module",
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.30.0",
     "dotenv": "^17.4.2",
