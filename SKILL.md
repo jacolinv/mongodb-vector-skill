@@ -58,14 +58,22 @@ The path is optional; without it, `ingest.py` uses `DOCUMENTS_PATH`. Supported f
 
 ### 5. Run vector retrieval
 
-Start the MCP server with `node mcp-server.js`. Invoke `mongodb_vector_search` with:
+Start the MCP server with `node mcp-server.js`. The following tools are available:
 
+**mongodb_vector_search**
+Invoke with:
 - `vector`: required numeric embedding array.
 - `limit`: maximum results; defaults to `5`.
 - `numCandidates`: approximate-search candidate count; defaults to `50`.
 - `path`: embedding field; defaults to `embedding`.
 
 The server uses the Atlas `$vectorSearch` aggregation stage, projects `_id`, `title`, `content`, and the vector score, then sorts by descending score.
+
+**find_by_document_id**
+Invoke with:
+- `documentId`: required string representing the document ID to search for.
+
+The server uses the standard `find()` query in MongoDB to return documents matching the specific `documentId`.
 
 ### 6. Interpret failures
 

@@ -22,6 +22,13 @@ class MongoDB:
 
         return existing.get("checksum")
 
+    def check_checksum_exists(self, checksum):
+        existing = self.collection.find_one(
+            {"checksum": checksum},
+            {"_id": 1}
+        )
+        return existing is not None
+
     def delete_document(self, document_id):
         self.collection.delete_many({
             "documentId": document_id

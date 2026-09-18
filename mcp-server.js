@@ -61,6 +61,20 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
           required: ["vector"],
         },
       },
+      {
+        name: "find_by_document_id",
+        description: "Realiza una búsqueda por documento utilizando documentId.",
+        inputSchema: {
+          type: "object",
+          properties: {
+            documentId: {
+              type: "string",
+              description: "El ID del documento a buscar.",
+            },
+          },
+          required: ["documentId"],
+        },
+      },
     ],
   };
 });
@@ -119,6 +133,43 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           {
             type: "text",
             text: `Error al ejecutar vectorSearch en MongoDB: ${error.message}`,
+          },
+        ],
+        isError: true,
+      };
+    } finally {
+      if (client) {
+        await client.close();
+      }
+    }
+  }
+
+  if (request.params.name === "find_by_document_id") {
+    const { documentId } = request.params.arguments;
+    let client;
+
+    try {
+      client = new MongoClient(MONGO_URI);
+      await client.connect();
+      const db = client.db(DB_NAME);
+      const collection = db.collection(COLLECTION_NAME);
+
+      const results = await collection.find({ documentId: documentId }).toArray();
+
+      return {
+        content: [
+          {
+            type: "text",
+            text: JSON.stringify(results, null, 2),
+          },
+        ],
+      };
+    } catch (error) {
+      return {
+        content: [
+          {
+            type: "text",
+            text: `Error al ejecutar find_by_document_id en MongoDB: ${error.message}`,
           },
         ],
         isError: true,

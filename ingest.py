@@ -137,8 +137,9 @@ def process_file(path, documents_path, voyage, mongo):
 
     checksum = file_checksum(path)
 
-    if checksum == mongo.get_document_checksum(document_id):
-        print("Sin cambios (MD5 identico), se omite.")
+    # Validar si este archivo ya se ingirió previamente (independientemente de la ruta)
+    if mongo.check_checksum_exists(checksum):
+        print(f"Sin cambios o archivo duplicado (MD5 {checksum} ya existe), se omite.")
         return
 
     model = model_for_extension(path.suffix)

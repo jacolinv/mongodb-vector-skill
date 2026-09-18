@@ -140,19 +140,26 @@ El servidor MCP se inicia con:
 node mcp-server.js
 ```
 
-La herramienta disponible es `mongodb_vector_search`, con estos parámetros:
+Las herramientas disponibles son:
 
-- `vector`: arreglo de números que representa el embedding de la consulta.
-- `limit`: número máximo de resultados, por defecto `5`.
-- `numCandidates`: cantidad de candidatos a evaluar, por defecto `50`.
-- `path`: campo vectorial dentro del documento, por defecto `embedding`.
+- **`mongodb_vector_search`**: Búsqueda semántica usando `$vectorSearch`.
+  Parámetros:
+  - `vector`: arreglo de números que representa el embedding de la consulta.
+  - `limit`: número máximo de resultados, por defecto `5`.
+  - `numCandidates`: cantidad de candidatos a evaluar, por defecto `50`.
+  - `path`: campo vectorial dentro del documento, por defecto `embedding`.
+  
+  El pipeline usa `$vectorSearch` de MongoDB Atlas y luego proyecta:
+  - `_id`
+  - `title`
+  - `content`
+  - `score` usando `$meta: "vectorSearchScore"`
 
-El pipeline usa `$vectorSearch` de MongoDB Atlas y luego proyecta:
-
-- `_id`
-- `title`
-- `content`
-- `score` usando `$meta: "vectorSearchScore"`
+- **`find_by_document_id`**: Búsqueda exacta por ID de documento.
+  Parámetros:
+  - `documentId`: (Requerido) string que representa el ID del documento a buscar.
+  
+  Retorna los fragmentos o el documento que coincida con ese `documentId` usando un `find()` estándar de MongoDB.
 
 ## Ingesta de documentos
 
