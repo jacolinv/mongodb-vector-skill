@@ -104,9 +104,12 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         },
         {
           $project: {
-            _id: 1,
-            title: 1,
-            content: 1,
+            _id: 0,
+            documentId: 1,
+            text: 1,
+            page: 1,
+            chunkIndex: 1,
+            fileType: 1,
             score: { $meta: "vectorSearchScore" },
           },
         },

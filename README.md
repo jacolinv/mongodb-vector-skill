@@ -150,9 +150,11 @@ Las herramientas disponibles son:
   - `path`: campo vectorial dentro del documento, por defecto `embedding`.
   
   El pipeline usa `$vectorSearch` de MongoDB Atlas y luego proyecta:
-  - `_id`
-  - `title`
-  - `content`
+  - `documentId`
+  - `text`
+  - `page`
+  - `chunkIndex`
+  - `fileType`
   - `score` usando `$meta: "vectorSearchScore"`
 
 - **`find_by_document_id`**: Búsqueda exacta por ID de documento.
