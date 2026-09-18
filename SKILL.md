@@ -14,7 +14,7 @@ Use this workspace to prepare multimodal knowledge, generate embeddings, persist
 ## When to Use
 
 - Build or validate a semantic-search or retrieval-augmented-generation workflow.
-- Ingest `.md`, `.pdf`, `.jpg`, `.jpeg`, or `.png` sources.
+- Ingest `.md`, `.txt`, `.csv`, `.xml`, `.pdf`, `.jpg`, `.jpeg`, or `.png` sources.
 - Generate document or query embeddings with Voyage AI.
 - Diagnose configuration, embedding-dimension, index, or MCP server problems.
 
@@ -54,7 +54,7 @@ To ingest a folder recursively, run:
 python ingest.py /path/to/documents
 ```
 
-The path is optional; without it, `ingest.py` uses `DOCUMENTS_PATH`. Supported files are `.md`, `.pdf`, `.jpg`, `.jpeg`, and `.png`.
+The path is optional; without it, `ingest.py` uses `DOCUMENTS_PATH`. Supported files are `.md`, `.txt`, `.csv`, `.xml`, `.pdf`, `.jpg`, `.jpeg`, and `.png`.
 
 ### 5. Run vector retrieval
 

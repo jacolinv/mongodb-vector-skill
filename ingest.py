@@ -184,7 +184,7 @@ def parse_args(argv=None):
         type=Path,
         default=DEFAULT_DOCUMENTS_PATH,
         help=(
-            "Carpeta raíz con archivos .md, .pdf, .jpg, .jpeg o .png. "
+            "Carpeta raíz con archivos .md, .txt, .csv, .xml, .pdf, .jpg, .jpeg o .png. "
             "Por defecto usa DOCUMENTS_PATH."
         )
     )

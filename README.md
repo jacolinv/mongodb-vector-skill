@@ -6,7 +6,7 @@ Una skill para preparar conocimiento multimodal, generar embeddings con Voyage A
 
 Este proyecto permite:
 
-- Ingestar documentos en formato Markdown, PDF e imágenes.
+- Ingestar documentos en formato Markdown, Texto (txt, csv, xml), PDF e imágenes.
 - Dividir el contenido en chunks para mejorar la recuperación semántica.
 - Generar embeddings con Voyage AI.
 - Guardar los documentos y sus vectores en MongoDB Atlas.
@@ -19,7 +19,7 @@ La idea principal es soportar un flujo de Retrieval-Augmented Generation (RAG) o
 Es útil cuando necesitas:
 
 - Construir una búsqueda semántica sobre documentación técnica o conocimiento interno.
-- Ingestar fuentes de tipo `.md`, `.pdf`, `.jpg`, `.jpeg` o `.png`.
+- Ingestar fuentes de tipo `.md`, `.txt`, `.csv`, `.xml`, `.pdf`, `.jpg`, `.jpeg` o `.png`.
 - Generar embeddings para documentos y consultas con el mismo modelo y dimensiones compatibles.
 - Validar una configuración de Atlas Vector Search, embeddings o MCP server.
 
@@ -82,7 +82,7 @@ El flujo principal es el siguiente:
 
 El proyecto acepta documentos con estas extensiones:
 
-- `.md`
+- `.md`, `.txt`, `.csv`, `.xml`
 - `.pdf`
 - `.jpg`
 - `.jpeg`
@@ -90,7 +90,7 @@ El proyecto acepta documentos con estas extensiones:
 
 Los archivos se leen con `loaders.py`:
 
-- Markdown: se procesa como texto.
+- Markdown/Texto: se procesa como texto.
 - PDF: cada página se convierte a texto más imagen renderizada.
 - Imagen: se convierte a RGB y se usa como entrada multimodal.
 
@@ -287,4 +287,3 @@ Es una base útil para construir un RAG local o un sistema de búsqueda por simi
 3. Añade una carpeta de documentos de prueba.
 4. Ejecuta `python3 ingest.py`.
 5. Inicia el MCP server y prueba `mongodb_vector_search` con un embedding de consulta real.
-

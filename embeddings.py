@@ -22,7 +22,10 @@ MODEL_BY_EXTENSION = {
     ".jpg": MULTIMODAL_MODEL,
     ".jpeg": MULTIMODAL_MODEL,
     ".png": MULTIMODAL_MODEL,
-    ".md": MULTIMODAL_MODEL
+    ".md": MULTIMODAL_MODEL,
+    ".txt": MULTIMODAL_MODEL,
+    ".csv": MULTIMODAL_MODEL,
+    ".xml": MULTIMODAL_MODEL
 }
 
 # Modelo usado para embeber la pregunta del usuario
