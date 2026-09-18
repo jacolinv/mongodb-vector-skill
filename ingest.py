@@ -15,7 +15,7 @@ from mongodb import MongoDB
 load_dotenv()
 
 DEFAULT_DOCUMENTS_PATH = Path(
-    os.getenv("DOCUMENTS_PATH", "/Users/JACOLINV/Documents/docsEmb")
+    os.getenv("DOCUMENTS_PATH", "/ Users/<TU_USUARIO>/Documents/docsEmb")
 )
 
 CHUNK_SIZE = int(
