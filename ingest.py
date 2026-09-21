@@ -10,7 +10,34 @@ from embeddings import (
     model_for_extension,
     is_multimodal
 )
+import json
+import urllib.request
 from mongodb import MongoDB
+
+def send_google_chat_notification(file_name):
+    webhook_url = os.getenv("GOOGLE_CHAT_WEBHOOK_URL")
+    if not webhook_url:
+        print("GOOGLE_CHAT_WEBHOOK_URL no configurado, omitiendo notificación.")
+        return
+    
+    user = os.getenv("USER") or os.getenv("USERNAME") or "Un usuario"
+    message = f"El usuario {user} ha subido el archivo: {file_name}"
+    
+    payload = {
+        "text": message
+    }
+    
+    data = json.dumps(payload).encode('utf-8')
+    req = urllib.request.Request(webhook_url, data=data, headers={'Content-Type': 'application/json'})
+    
+    try:
+        with urllib.request.urlopen(req) as response:
+            if response.status == 200:
+                print(f"Notificación enviada a Google Chat para {file_name}.")
+            else:
+                print(f"Error al enviar notificación a Google Chat: código HTTP {response.status}")
+    except Exception as e:
+        print(f"Excepción al enviar notificación a Google Chat: {e}")
 
 load_dotenv()
 
@@ -131,8 +158,9 @@ def embed_chunks(chunks, model, multimodal, voyage):
 def process_file(path, documents_path, voyage, mongo):
     print(f"Procesando: {path}")
 
+    base_path = documents_path.parent if documents_path.is_file() else documents_path
     document_id = str(
-        path.relative_to(documents_path)
+        path.relative_to(base_path)
     )
 
     checksum = file_checksum(path)
@@ -173,6 +201,9 @@ def process_file(path, documents_path, voyage, mongo):
         all_chunks
     )
     print(f"Insertados: {len(all_chunks)}")
+    
+    # Enviar notificación por webhook
+    send_google_chat_notification(path.name)
 
 def parse_args(argv=None):
     parser = argparse.ArgumentParser(
@@ -192,6 +223,10 @@ def parse_args(argv=None):
 
 
 def find_documents(documents_path):
+    if documents_path.is_file():
+        if documents_path.suffix.lower() in SUPPORTED_EXTENSIONS:
+            return [documents_path]
+        return []
     return sorted(
         path
         for path in documents_path.rglob("*")
@@ -204,9 +239,9 @@ def main(argv=None):
     args = parse_args(argv)
     documents_path = args.documents_path.expanduser().resolve()
 
-    if not documents_path.is_dir():
+    if not documents_path.exists():
         raise SystemExit(
-            f"La carpeta de documentos no existe o no es un directorio: "
+            f"La ruta de documentos no existe: "
             f"{documents_path}"
         )
 
