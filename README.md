@@ -41,7 +41,7 @@ Antes de usar la skill debes tener:
 npm install
 ```
 
-2. Instala dependencias de Python requeridas por la ingesta y los embeddings:
+1. Instala dependencias de Python requeridas por la ingesta y los embeddings:
 
 ```bash
 python3 -m pip install pymupdf pillow voyageai python-dotenv
