@@ -125,7 +125,7 @@ def build_chunks(path, document_id, blocks, multimodal, checksum):
                 "text": " ".join(text_parts),
                 "hasImage": has_image,
                 "u": os.getenv("USER") or os.getenv("USERNAME") or "Desconocido",
-                "i": datetime.utcnow().isoformat() + "Z",
+                "i": datetime.utcnow(),
                 "_parts": parts
             })
 
