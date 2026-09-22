@@ -6,11 +6,13 @@ from PIL import Image
 
 
 TEXT_EXTENSIONS = {".md", ".txt", ".csv", ".xml"}
+OFFICE_EXTENSIONS = {".docx", ".xlsx"}
 PDF_EXTENSIONS = {".pdf"}
 IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".png"}
 
 SUPPORTED_EXTENSIONS = (
     TEXT_EXTENSIONS
+    | OFFICE_EXTENSIONS
     | PDF_EXTENSIONS
     | IMAGE_EXTENSIONS
 )
@@ -95,6 +97,36 @@ def load_image(path: Path):
     ]
 
 
+def load_office(path: Path):
+    text = ""
+    extension = path.suffix.lower()
+    
+    if extension == ".docx":
+        import docx
+        doc = docx.Document(path)
+        text = "\n".join([para.text for para in doc.paragraphs])
+    elif extension == ".xlsx":
+        import openpyxl
+        wb = openpyxl.load_workbook(path, data_only=True)
+        lines = []
+        for sheet in wb.worksheets:
+            lines.append(f"--- Sheet: {sheet.title} ---")
+            for row in sheet.iter_rows(values_only=True):
+                # Filter out completely empty rows
+                if not all(cell is None for cell in row):
+                    lines.append(", ".join([str(cell) if cell is not None else "" for cell in row]))
+        text = "\n".join(lines)
+        
+    return [
+        {
+            "modality": "text",
+            "text": text,
+            "image": None,
+            "page": None
+        }
+    ]
+
+
 def load_document(path: Path):
 
     extension = path.suffix.lower()
@@ -104,6 +136,9 @@ def load_document(path: Path):
 
     if extension in TEXT_EXTENSIONS:
         return load_markdown(path)
+        
+    if extension in OFFICE_EXTENSIONS:
+        return load_office(path)
 
     if extension in IMAGE_EXTENSIONS:
         return load_image(path)
