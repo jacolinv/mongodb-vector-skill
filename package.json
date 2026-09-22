@@ -1,6 +1,6 @@
 {
   "name": "@jacolinv/mongodb-vector-skill",
-  "version": "1.4.0",
+  "version": "1.5.0",
   "description": "MCP server and ingestion helpers for MongoDB Atlas Vector Search",
   "main": "index.js",
   "scripts": {
