@@ -25,7 +25,9 @@ MODEL_BY_EXTENSION = {
     ".md": MULTIMODAL_MODEL,
     ".txt": MULTIMODAL_MODEL,
     ".csv": MULTIMODAL_MODEL,
-    ".xml": MULTIMODAL_MODEL
+    ".xml": MULTIMODAL_MODEL,
+    ".docx": MULTIMODAL_MODEL,
+    ".xlsx": MULTIMODAL_MODEL
 }
 
 # Modelo usado para embeber la pregunta del usuario
