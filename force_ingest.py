@@ -13,17 +13,6 @@ from embeddings import VoyageEmbedding
 from ingest import process_file, DEFAULT_DOCUMENTS_PATH, find_documents
 
 def main():
-    parser = argparse.add_argument(
-        "documents_path",
-        nargs="?",
-        type=Path,
-        default=DEFAULT_DOCUMENTS_PATH,
-        help=(
-            "Carpeta raíz con archivos a forzar ingestión. "
-            "Por defecto usa DOCUMENTS_PATH."
-        )
-    )
-    
     parser = argparse.ArgumentParser(description="Fuerza la ingestión de una carpeta, eliminando documentos previos.")
     parser.add_argument("documents_path", type=Path, nargs="?", default=DEFAULT_DOCUMENTS_PATH, help="Ruta de la carpeta")
     args = parser.parse_args()
@@ -58,9 +47,10 @@ def main():
         
         # Eliminar cualquier residuo previo basado en el nombre base del archivo
         base_name_escaped = re.escape(file.stem)
-        mongo.collection.delete_many({"documentId": {"$regex": base_name_escaped}})
+        result = mongo.collection.delete_many({"documentId": {"$regex": base_name_escaped}})
         
-        process_file(file, target_path, voyage, mongo)
+        process_file(file, target_path, voyage, mongo, force_replacement=(result.deleted_count > 0))
 
 if __name__ == "__main__":
     main()
+

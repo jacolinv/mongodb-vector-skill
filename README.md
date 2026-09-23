@@ -10,6 +10,7 @@ Este proyecto permite:
 - Dividir el contenido en chunks para mejorar la recuperación semántica.
 - Generar embeddings con Voyage AI.
 - Guardar los documentos y sus vectores en MongoDB Atlas.
+- Notificar automáticamente a Google Chat (Webhook) las subidas y los reemplazos de documentos.
 - Ejecutar una búsqueda vectorial a través del tool `mongodb_vector_search` expuesto por `mcp-server.js`.
 
 La idea principal es soportar un flujo de Retrieval-Augmented Generation (RAG) o búsqueda semántica sobre documentos locales.
@@ -41,7 +42,7 @@ Antes de usar la skill debes tener:
 npm install
 ```
 
-1. Instala dependencias de Python requeridas por la ingesta y los embeddings:
+2. Instala dependencias de Python requeridas por la ingesta y los embeddings:
 
 ```bash
 python3 -m pip install pymupdf pillow voyageai python-dotenv python-docx openpyxl
@@ -56,6 +57,7 @@ MONGODB_COLLECTION="knowledge"
 VECTOR_INDEX_NAME="vector_index"
 VOYAGE_API_KEY="<tu_api_key>"
 DOCUMENTS_PATH="/ruta/a/documentos"
+GOOGLE_CHAT_WEBHOOK_URL="https://chat.googleapis.com/..."
 ```
 
 > El archivo `.env` no debe subirse al repositorio si incluye secretos reales.
@@ -72,6 +74,7 @@ Estas son las variables que usa el proyecto:
 - `DOCUMENTS_PATH`: ruta por defecto para el directorio con documentos a ingerir.
 - `CHUNK_SIZE`: longitud aproximada de cada chunk de texto.
 - `CHUNK_OVERLAP_SENTENCES`: superposición entre chunks.
+- `GOOGLE_CHAT_WEBHOOK_URL`: (Opcional) URL del webhook de Google Chat para enviar notificaciones de subidas y actualizaciones de documentos.
 - `EMBED_BATCH_SIZE`: tamaño del lote para embeding en batch.
 
 ## Flujo de trabajo

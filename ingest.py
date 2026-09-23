@@ -15,14 +15,17 @@ import json
 import urllib.request
 from mongodb import MongoDB
 
-def send_google_chat_notification(file_name):
+def send_google_chat_notification(file_name, is_replacement=False):
     webhook_url = os.getenv("GOOGLE_CHAT_WEBHOOK_URL")
     if not webhook_url:
         print("GOOGLE_CHAT_WEBHOOK_URL no configurado, omitiendo notificación.")
         return
     
     user = os.getenv("USER") or os.getenv("USERNAME") or "Un usuario"
-    message = f"El usuario {user} ha subido el archivo: {file_name}"
+    if is_replacement:
+        message = f"El usuario {user} ha reemplazado/actualizado el archivo: {file_name}"
+    else:
+        message = f"El usuario {user} ha subido el archivo: {file_name}"
     
     payload = {
         "text": message
@@ -158,7 +161,7 @@ def embed_chunks(chunks, model, multimodal, voyage):
             del chunk["_parts"]
 
 
-def process_file(path, documents_path, voyage, mongo):
+def process_file(path, documents_path, voyage, mongo, force_replacement=False):
     print(f"Procesando: {path}")
 
     base_path = documents_path.parent if documents_path.is_file() else documents_path
@@ -197,7 +200,7 @@ def process_file(path, documents_path, voyage, mongo):
 
     embed_chunks(all_chunks, model, multimodal, voyage)
 
-    mongo.delete_document(
+    deleted_count = mongo.delete_document(
         document_id
     )
     mongo.insert_many(
@@ -206,7 +209,7 @@ def process_file(path, documents_path, voyage, mongo):
     print(f"Insertados: {len(all_chunks)}")
     
     # Enviar notificación por webhook
-    send_google_chat_notification(path.name)
+    send_google_chat_notification(path.name, is_replacement=(deleted_count > 0 or force_replacement))
 
 def parse_args(argv=None):
     parser = argparse.ArgumentParser(

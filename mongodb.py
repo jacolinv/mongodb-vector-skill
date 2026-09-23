@@ -30,6 +30,7 @@ class MongoDB:
         return existing is not None
 
     def delete_document(self, document_id):
-        self.collection.delete_many({
+        result = self.collection.delete_many({
             "documentId": document_id
         })
+        return result.deleted_count
