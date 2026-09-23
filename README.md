@@ -169,13 +169,18 @@ Las herramientas disponibles son:
 
 ## Ingesta de documentos
 
-La forma más directa de procesar una carpeta es:
+La forma más directa de procesar una carpeta nueva es:
 
 ```bash
 python3 ingest.py /ruta/a/documentos
 ```
+*(Si no pasas una ruta, el script usa `DOCUMENTS_PATH` o la ruta por defecto).*
 
-Si no pasas una ruta, el script usa `DOCUMENTS_PATH` o la ruta por defecto configurada en el proyecto.
+Si deseas **forzar la actualización o re-ingesta** de una carpeta completa o un archivo que ya fue procesado (y quieres borrar la versión anterior para evitar duplicados), utiliza:
+
+```bash
+python3 force_ingest.py /ruta/a/documentos
+```
 
 Ejemplo:
 
@@ -212,6 +217,7 @@ Verifica que:
 .
 ├── chunker.py
 ├── embeddings.py
+├── force_ingest.py
 ├── ingest.py
 ├── loaders.py
 ├── mcp-server.js
@@ -225,6 +231,7 @@ Verifica que:
 ### Descripción por archivo
 
 - `ingest.py`: procesa documentos y genera embeddings para insertarlos en MongoDB.
+- `force_ingest.py`: herramienta que fuerza la re-ingesta de archivos, borrando versiones o duplicados previos por nombre.
 - `loaders.py`: cargadores para Markdown, PDF e imágenes.
 - `embeddings.py`: wrapper para Voyage AI y generación de embeddings.
 - `chunker.py`: división del texto en chunks inteligentes.
