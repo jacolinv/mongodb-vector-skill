@@ -1,6 +1,6 @@
 ---
 name: mongodb-vector-search
-description: "Use this skill to ingest Markdown, PDF, and image knowledge into MongoDB Atlas and perform semantic vector search through the local MCP server. Trigger for MongoDB $vectorSearch, embeddings, Voyage AI, Atlas Search indexes, MCP vector retrieval, or validating this workspace."
+description: "Use this skill to ingest Markdown, Office (Word/Excel), PDF, and image knowledge into MongoDB Atlas and perform semantic vector search through the local MCP server. Trigger for MongoDB $vectorSearch, embeddings, Voyage AI, Atlas Search indexes, MCP vector retrieval, or validating this workspace."
 argument-hint: "Describe the knowledge source, query, or validation you need."
 user-invocable: true
 ---
@@ -14,7 +14,7 @@ Use this workspace to prepare multimodal knowledge, generate embeddings, persist
 ## When to Use
 
 - Build or validate a semantic-search or retrieval-augmented-generation workflow.
-- Ingest `.md`, `.txt`, `.csv`, `.xml`, `.pdf`, `.jpg`, `.jpeg`, or `.png` sources.
+- Ingest `.md`, `.txt`, `.csv`, `.xml`, `.docx`, `.xlsx`, `.pdf`, `.jpg`, `.jpeg`, or `.png` sources.
 - Generate document or query embeddings with Voyage AI.
 - Diagnose configuration, embedding-dimension, index, or MCP server problems.
 
@@ -28,6 +28,7 @@ Use this workspace to prepare multimodal knowledge, generate embeddings, persist
    - `MONGODB_COLLECTION` (defaults to `knowledge`)
    - `VECTOR_INDEX_NAME` (defaults to `vector_index`)
    - `VOYAGE_API_KEY` for embedding ingestion or query generation
+   - `GOOGLE_CHAT_WEBHOOK_URL` (optional) to trigger upload and replacement notifications
 4. Create an Atlas Vector Search index whose `path`, dimensions, and similarity metric match the generated embeddings. The default embedding dimension in `embeddings.py` is `1024`.
 
 ## Procedure
@@ -38,7 +39,7 @@ Identify whether the task is ingestion, query embedding, vector retrieval, or va
 
 ### 2. Prepare source content
 
-Use `loaders.py` to load supported files. Markdown is returned as text, PDFs as page-level text plus rendered images, and images as RGB inputs. Use `chunker.py` for text segmentation when the source is larger than one embedding input.
+Use `loaders.py` to load supported files. Markdown/Office is returned as text, PDFs as page-level text plus rendered images, and images as RGB inputs. Use `chunker.py` for text segmentation when the source is larger than one embedding input.
 
 ### 3. Generate embeddings
 
@@ -54,7 +55,7 @@ To ingest a folder recursively, run:
 python ingest.py /path/to/documents
 ```
 
-The path is optional; without it, `ingest.py` uses `DOCUMENTS_PATH`. Supported files are `.md`, `.txt`, `.csv`, `.xml`, `.pdf`, `.jpg`, `.jpeg`, and `.png`.
+*(Use `python force_ingest.py /path/to/documents` if you need to force re-ingestion and overwrite duplicates).* The path is optional; without it, scripts use `DOCUMENTS_PATH`. Supported files are `.md`, `.txt`, `.csv`, `.xml`, `.docx`, `.xlsx`, `.pdf`, `.jpg`, `.jpeg`, and `.png`.
 
 ### 5. Run vector retrieval
 
@@ -67,7 +68,7 @@ Invoke with:
 - `numCandidates`: approximate-search candidate count; defaults to `50`.
 - `path`: embedding field; defaults to `embedding`.
 
-The server uses the Atlas `$vectorSearch` aggregation stage, projects `_id`, `title`, `content`, and the vector score, then sorts by descending score.
+The server uses the Atlas `$vectorSearch` aggregation stage, projects `documentId`, `text`, `page`, `chunkIndex`, `fileType`, and the vector `score`, then sorts by descending score.
 
 **find_by_document_id**
 Invoke with:
@@ -88,7 +89,7 @@ The server uses the standard `find()` query in MongoDB to return documents match
 Run these checks before reporting the workspace as ready:
 
 1. `npm test` passes, including JavaScript syntax and Python compilation checks.
-2. The skill file is at `.github/skills/mongodb-vector-search/SKILL.md`, and its `name` matches the directory.
+2. The skill file is at `.agents/skills/mongodb-vector-skill/SKILL.md`, and its `name` matches the directory.
 3. Frontmatter is enclosed by two `---` markers and includes a meaningful `description`.
 4. Static validation does not require MongoDB Atlas or Voyage credentials.
 5. Live retrieval is tested separately only when valid credentials and an Atlas index are available.
