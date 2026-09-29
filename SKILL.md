@@ -1,5 +1,5 @@
 ---
-name: mongodb-vector-search
+name: mongodb-vector-skill
 description: "Use this skill to ingest Markdown, Office (Word/Excel), PDF, and image knowledge into MongoDB Atlas and perform semantic vector search through the local MCP server. Trigger for MongoDB $vectorSearch, embeddings, Voyage AI, Atlas Search indexes, MCP vector retrieval, or validating this workspace."
 argument-hint: "Describe the knowledge source, query, or validation you need."
 user-invocable: true
