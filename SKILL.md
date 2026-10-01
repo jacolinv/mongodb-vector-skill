@@ -39,7 +39,14 @@ Identify whether the task is ingestion, query embedding, vector retrieval, or va
 
 ### 2. Prepare source content
 
-Use `loaders.py` to load supported files. Markdown/Office is returned as text, PDFs as page-level text plus rendered images, and images as RGB inputs. Use `chunker.py` for text segmentation when the source is larger than one embedding input.
+Use `loaders.py` to load supported files:
+- Markdown sources are parsed for structured text, inline Base64 images (`data:image/...`), and local referenced images (`![alt](path)`).
+- DOCX files extract text paragraphs along with all embedded images.
+- PDFs are converted into page-level blocks with extracted text and rendered visual pages.
+- Images are loaded directly as RGB multimodal inputs.
+- Excel files are converted into structured text lines.
+
+Use `chunker.py` for text segmentation when the source is larger than one embedding input.
 
 ### 3. Generate embeddings
 

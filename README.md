@@ -77,9 +77,153 @@ Estas son las variables que usa el proyecto:
 - `GOOGLE_CHAT_WEBHOOK_URL`: (Opcional) URL del webhook de Google Chat para enviar notificaciones de subidas y actualizaciones de documentos.
 - `EMBED_BATCH_SIZE`: tamaño del lote para embeding en batch.
 
-## Flujo de trabajo
+## Flujo de trabajo y Arquitectura (Architecture & Workflow)
 
-El flujo principal es el siguiente:
+La arquitectura de esta skill se divide en dos fases principales: **Ingesta de Datos** (Python) y **Búsqueda Vectorial/MCP** (Node.js). Ambos procesos interactúan con servicios de Inteligencia Artificial (Voyage AI) y persistencia en la nube (MongoDB Atlas).
+
+### Diagrama de Arquitectura de la Skill
+
+```mermaid
+flowchart TD
+    User(["👤 Usuario / Desarrollador"])
+
+    subgraph AIAgentLayer ["Capa de Inteligencia Artificial & Agente"]
+        Agent["🤖 Agente IA / LLM Client<br/>(Antigravity / Claude / Custom Agent)"]
+    end
+
+    subgraph EntornoLocal ["Entorno Local (Workspace)"]
+        Archivos["📁 Archivos Locales<br/>(.md, .pdf, .docx, .jpg, etc.)"]
+        
+        subgraph PipelineIngesta ["Pipeline de Ingesta (Python)"]
+            Ingest["ingest.py / force_ingest.py<br/>(Controlador Principal)"]
+            Loaders["loaders.py<br/>(Extracción de Texto/Visión)"]
+            Chunker["chunker.py<br/>(Segmentación Inteligente)"]
+            EmbeddingsPy["embeddings.py<br/>(Cliente Voyage AI)"]
+            MongoPy["mongodb.py<br/>(Cliente MongoDB)"]
+            
+            Ingest --> Loaders
+            Ingest --> Chunker
+            Ingest --> EmbeddingsPy
+            Ingest --> MongoPy
+        end
+        
+        subgraph PipelineBusqueda ["Pipeline MCP Server (Node.js)"]
+            MCP["mcp-server.js<br/>(Local MCP Protocol Server)"]
+            Tools["Tools: mongodb_vector_search<br/>& find_by_document_id"]
+            QueryJS["query_mongo.js<br/>(Driver MongoDB)"]
+            
+            MCP --> Tools --> QueryJS
+        end
+    end
+    
+    subgraph CloudServices ["Servicios Externos (Cloud)"]
+        VoyageAI["🧠 Voyage AI API<br/>(Embeddings text/multimodal 1024d)"]
+        MongoDB["🍃 MongoDB Atlas<br/>(Vector Database $vectorSearch)"]
+        GoogleChat["💬 Google Chat Webhook<br/>(Notificaciones de Ingesta)"]
+    end
+
+    %% Interacciones Usuario / Agente
+    User -->|"Prompt / Pregunta"| Agent
+    User -->|"Comando de Ingesta"| Ingest
+    Agent <-->|"Protocolo MCP (JSON-RPC stdio)"| MCP
+    Agent -->|"Genera Respuesta Aumentada RAG"| User
+
+    %% Ingesta
+    Archivos --> Ingest
+    EmbeddingsPy <-->|"Generación de Vectores"| VoyageAI
+    MongoPy -->|"Persistencia de Chunks & Vectores"| MongoDB
+    MongoPy -.->|"Notifica subidas/reemplazos"| GoogleChat
+    
+    %% Búsqueda
+    QueryJS <-->|"Consulta $vectorSearch / find"| MongoDB
+
+    %% Estilos
+    classDef agent fill:#673AB7,color:white,stroke:#512DA8;
+    classDef python fill:#3776AB,color:white,stroke:#1E415E;
+    classDef nodejs fill:#339933,color:white,stroke:#1B5E20;
+    classDef cloud fill:#FF9900,color:white,stroke:#E65100;
+    classDef user fill:#2196F3,color:white,stroke:#0D47A1;
+    
+    class Agent agent;
+    class Ingest,Loaders,Chunker,EmbeddingsPy,MongoPy python;
+    class MCP,Tools,QueryJS nodejs;
+    class VoyageAI,MongoDB,GoogleChat cloud;
+    class User user;
+```
+
+### Diagrama de Flujo de Todos los Caminos Posibles (Decision Flowchart)
+
+El siguiente diagrama detalla todas las rutas de ejecución posibles coordinadas por el **Agente IA / Usuario**, incluyendo validación estática, ingesta multimodal, búsqueda semántica vía MCP y resolución de fallos:
+
+```mermaid
+flowchart TD
+    %% Inicio
+    UserPrompt(["👤 Usuario / Prompt"]) --> Agent["🤖 Agente IA (Evaluación de Intención)"]
+    Agent --> TaskType{"1. ¿Qué camino ejecutar?"}
+
+    %% CAMINO 1: Validación Estática
+    TaskType -- "A. Validación Estática" --> ValStatic["Ejecutar npm test<br/>(Sintaxis JS y compilación Python)"]
+    ValStatic --> CheckFrontmatter{"¿Frontmatter & SKILL.md válidos?"}
+    CheckFrontmatter -- Sí --> AgentReportReady["🤖 Agente: Reporta Workspace listo sin credenciales"] --> Ready(["Listo"])
+    CheckFrontmatter -- No --> FixStatic["Corregir errores de código o metadatos"] --> ValStatic
+
+    %% CAMINO 2: Ingesta de Conocimiento
+    TaskType -- "B. Ingesta de Conocimiento" --> CheckCredsIngest{"¿Credenciales .env presentes?<br/>(MONGODB_URI, VOYAGE_API_KEY)"}
+    CheckCredsIngest -- No --> ErrCreds["Error: Solicitar variables de entorno"]
+    CheckCredsIngest -- Sí --> IngestMode{"¿Tipo de Ingesta?"}
+    
+    IngestMode -- "Normal (checksum)" --> RunIngest["python ingest.py [ruta]"]
+    IngestMode -- "Forzada (sobrescribir)" --> RunForce["python force_ingest.py [ruta]"]
+
+    RunIngest --> LoadFiles["loaders.py: Carga según extensión"]
+    RunForce --> LoadFiles
+
+    LoadFiles --> FileBranch{"Tipo de Archivo"}
+    FileBranch -- ".md, .txt, .csv, .xml, .docx, .xlsx" --> TextExtract["Extraer texto"]
+    FileBranch -- ".pdf" --> PDFExtract["Extraer texto por página + renders"]
+    FileBranch -- ".jpg, .jpeg, .png" --> ImgExtract["Extraer inputs RGB"]
+
+    TextExtract --> ChunkCheck{"¿Excede tamaño de embedding?"}
+    PDFExtract --> ChunkCheck
+    ChunkCheck -- Sí --> Chunking["chunker.py: Segmentación en chunks"] --> GenEmbed
+    ChunkCheck -- No --> GenEmbed["embeddings.py: VoyageEmbedding<br/>(dim: 1024, model_for_extension)"]
+    ImgExtract --> GenEmbed
+
+    GenEmbed --> MongoPersist["mongodb.py: Persistir chunks y embeddings en Atlas"]
+    MongoPersist --> WebhookCheck{"¿GOOGLE_CHAT_WEBHOOK_URL configurado?"}
+    WebhookCheck -- Sí --> SendWebhook["Enviar notificación a Google Chat"] --> IngestDone(["Ingesta Completada"])
+    WebhookCheck -- No --> IngestDone
+
+    %% CAMINO 3: Recuperación / Búsqueda RAG
+    TaskType -- "C. Búsqueda Semántica / RAG" --> StartMCP["Iniciar / Conectar a MCP Server: mcp-server.js"]
+    StartMCP --> AgentToolCall["🤖 Agente IA: Selecciona Herramienta MCP"]
+
+    %% 3.1 mongodb_vector_search
+    AgentToolCall -- "mongodb_vector_search" --> GenQueryEmbed["embeddings.py / query: Generar vector con embed_query()"]
+    GenQueryEmbed --> ExecVectorSearch["Ejecutar $vectorSearch en MongoDB Atlas<br/>(vector, limit, numCandidates, path)"]
+    ExecVectorSearch --> ProjectResults["Proyectar score, documentId, text, page, chunkIndex, fileType"]
+    ProjectResults --> ResultCheck{"¿Resultados encontrados?"}
+    ResultCheck -- Sí --> AgentRAG["🤖 Agente IA: Sintetiza contexto y responde al Usuario (RAG)"] --> ResponseDone(["Respuesta Entregada"])
+    ResultCheck -- No / Vacío --> DiagRetrieval["Diagnóstico: Dimensiones del vector, numCandidates o modelo incompatible"]
+
+    %% 3.2 find_by_document_id
+    AgentToolCall -- "find_by_document_id" --> ExecFind["Ejecutar query find({ documentId })"]
+    ExecFind --> AgentDocResponse["🤖 Agente IA: Muestra documento exacto"] --> ResponseDone
+
+    %% Diagnósticos y Manejo de Errores
+    DiagRetrieval --> ErrorTriage
+    ErrCreds --> ErrorTriage
+    
+    subgraph ErrorHandling ["Interpretación y Diagnóstico de Fallos"]
+        ErrorTriage{"Identificar tipo de fallo"}
+        ErrorTriage --> E1["Módulos / Dependencias -> Verificar package.json (type: module) & npm/pip install"]
+        ErrorTriage --> E2["Credenciales / .env -> Verificar MONGODB_URI y VOYAGE_API_KEY"]
+        ErrorTriage --> E3["Atlas Vector Index -> Verificar nombre, dimensiones (1024) y métrica de similitud"]
+        ErrorTriage --> E4["Conexión / Red -> Revisar logs del driver MongoDB y conectividad Atlas"]
+    end
+```
+
+El flujo principal paso a paso es el siguiente:
 
 ### 1. Preparar los documentos
 
@@ -94,9 +238,11 @@ El proyecto acepta documentos con estas extensiones:
 
 Los archivos se leen con `loaders.py`:
 
-- Markdown/Texto: se procesa como texto.
-- PDF: cada página se convierte a texto más imagen renderizada.
-- Imagen: se convierte a RGB y se usa como entrada multimodal.
+- Markdown: procesa el texto, decodifica imágenes incrustadas en Base64 (`data:image/...`) y carga imágenes referenciadas localmente (`![alt](ruta)` o `<img src="...">`).
+- Texto (.txt, .csv, .xml) / Excel (.xlsx): se procesa como texto estructurado.
+- DOCX: extrae los párrafos de texto y todas las imágenes embebidas en el documento.
+- PDF: cada página se convierte a bloque multimodal (texto extraído + imagen renderizada).
+- Imagen: se convierte a RGB y se usa como entrada multimodal con Voyage AI.
 
 ### 2. Dividir contenido en chunks
 

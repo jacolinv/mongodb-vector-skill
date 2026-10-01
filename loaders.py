@@ -43,16 +43,78 @@ def _downscale(image: Image.Image) -> Image.Image:
 
 
 def load_markdown(path: Path):
-    text = path.read_text(encoding="utf-8")
+    import io
+    import re
+    import base64
+    import urllib.parse
 
-    return [
-        {
-            "modality": "text",
-            "text": text,
-            "image": None,
-            "page": None
-        }
-    ]
+    text = path.read_text(encoding="utf-8")
+    blocks = []
+    
+    # 1. Extraer imágenes en Base64: ![alt](data:image/png;base64,...) o <img src="data:image/..." />
+    base64_pattern = re.compile(r'!\[(.*?)\]\(data:image\/[a-zA-Z]+;base64,([A-Za-z0-9+/=\s]+)\)|<img[^>]+src=["\']data:image\/[a-zA-Z]+;base64,([A-Za-z0-9+/=\s]+)["\'][^>]*>', re.IGNORECASE)
+    
+    # 2. Extraer imágenes referenciadas por ruta relativa: ![alt](images/pic.png) o ![](./pic.png)
+    file_ref_pattern = re.compile(r'!\[(.*?)\]\((?!data:image|http:\/\/|https:\/\/)([^)]+)\)|<img[^>]+src=["\'](?!data:image|http:\/\/|https:\/\/)([^"\']+)["\'][^>]*>', re.IGNORECASE)
+
+    extracted_images = []
+
+    # Procesar base64
+    for match in base64_pattern.finditer(text):
+        alt_text = match.group(1) or ""
+        b64_str = match.group(2) or match.group(3)
+        if b64_str:
+            try:
+                # Limpiar saltos de línea y espacios en la cadena base64
+                clean_b64 = re.sub(r"\s+", "", b64_str)
+                img_bytes = base64.b64decode(clean_b64)
+                img = Image.open(io.BytesIO(img_bytes)).convert("RGB")
+                label = f"{path.stem} - {alt_text}" if alt_text else f"{path.stem} - Imagen incrustada"
+                extracted_images.append({
+                    "modality": "image",
+                    "text": label,
+                    "image": _downscale(img),
+                    "page": None
+                })
+            except Exception:
+                continue
+
+    # Procesar referencias de archivos locales
+    for match in file_ref_pattern.finditer(text):
+        alt_text = match.group(1) or ""
+        rel_path_str = match.group(2) or match.group(4)
+        if rel_path_str:
+            # Quitar posibles parámetros o anchors tipo ?raw=true
+            rel_path_clean = urllib.parse.unquote(rel_path_str.split("?")[0].split("#")[0].strip())
+            img_path = (path.parent / rel_path_clean).resolve()
+            if img_path.is_file() and img_path.suffix.lower() in IMAGE_EXTENSIONS:
+                try:
+                    img = Image.open(img_path).convert("RGB")
+                    label = f"{path.stem} - {alt_text}" if alt_text else f"{path.stem} - {img_path.name}"
+                    extracted_images.append({
+                        "modality": "image",
+                        "text": label,
+                        "image": _downscale(img),
+                        "page": None
+                    })
+                except Exception:
+                    continue
+
+    # Limpiar el texto de las cadenas gigantescas de base64 para evitar contaminar los chunks de texto
+    clean_text = base64_pattern.sub(lambda m: f"![{m.group(1) or 'imagen'}]", text)
+    
+    # Bloque de texto principal
+    blocks.append({
+        "modality": "text",
+        "text": clean_text.strip(),
+        "image": None,
+        "page": None
+    })
+
+    # Agregar las imágenes extraídas como bloques independientes
+    blocks.extend(extracted_images)
+
+    return blocks
 
 
 def load_pdf(path: Path):
@@ -98,13 +160,52 @@ def load_image(path: Path):
 
 
 def load_office(path: Path):
-    text = ""
     extension = path.suffix.lower()
     
     if extension == ".docx":
+        import io
         import docx
         doc = docx.Document(path)
-        text = "\n".join([para.text for para in doc.paragraphs])
+        blocks = []
+        
+        # 1. Extraer texto principal
+        text_paragraphs = [para.text.strip() for para in doc.paragraphs if para.text.strip()]
+        full_text = "\n".join(text_paragraphs)
+        if full_text:
+            blocks.append({
+                "modality": "text",
+                "text": full_text,
+                "image": None,
+                "page": None
+            })
+            
+        # 2. Extraer imágenes embebidas en el documento
+        image_idx = 1
+        for rel in doc.part.rels.values():
+            if "image" in rel.target_ref:
+                try:
+                    img_data = rel.target_part.blob
+                    image = Image.open(io.BytesIO(img_data)).convert("RGB")
+                    blocks.append({
+                        "modality": "image",
+                        "text": f"{path.stem} - Imagen {image_idx}",
+                        "image": _downscale(image),
+                        "page": None
+                    })
+                    image_idx += 1
+                except Exception as e:
+                    # Si alguna imagen está corrupta o no es soportada por PIL, se omite
+                    continue
+
+        if not blocks:
+            blocks.append({
+                "modality": "text",
+                "text": "",
+                "image": None,
+                "page": None
+            })
+        return blocks
+
     elif extension == ".xlsx":
         import openpyxl
         wb = openpyxl.load_workbook(path, data_only=True)
@@ -117,14 +218,14 @@ def load_office(path: Path):
                     lines.append(", ".join([str(cell) if cell is not None else "" for cell in row]))
         text = "\n".join(lines)
         
-    return [
-        {
-            "modality": "text",
-            "text": text,
-            "image": None,
-            "page": None
-        }
-    ]
+        return [
+            {
+                "modality": "text",
+                "text": text,
+                "image": None,
+                "page": None
+            }
+        ]
 
 
 def load_document(path: Path):
