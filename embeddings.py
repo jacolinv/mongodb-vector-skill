@@ -26,6 +26,8 @@ MODEL_BY_EXTENSION = {
     ".txt": MULTIMODAL_MODEL,
     ".csv": MULTIMODAL_MODEL,
     ".xml": MULTIMODAL_MODEL,
+    ".json": MULTIMODAL_MODEL,
+    ".js": MULTIMODAL_MODEL,
     ".docx": MULTIMODAL_MODEL,
     ".xlsx": MULTIMODAL_MODEL
 }

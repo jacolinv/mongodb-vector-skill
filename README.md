@@ -6,7 +6,7 @@ Una skill para preparar conocimiento multimodal, generar embeddings con Voyage A
 
 Este proyecto permite:
 
-- Ingestar documentos en formato Markdown, Texto (txt, csv, xml), Office (docx, xlsx), PDF e imágenes.
+- Ingestar documentos en formato Markdown, Texto (txt, csv, xml, json, js), Office (docx, xlsx), PDF e imágenes.
 - Dividir el contenido en chunks para mejorar la recuperación semántica.
 - Generar embeddings con Voyage AI.
 - Guardar los documentos y sus vectores en MongoDB Atlas.
@@ -20,7 +20,7 @@ La idea principal es soportar un flujo de Retrieval-Augmented Generation (RAG) o
 Es útil cuando necesitas:
 
 - Construir una búsqueda semántica sobre documentación técnica o conocimiento interno.
-- Ingestar fuentes de tipo `.md`, `.txt`, `.csv`, `.xml`, `.docx`, `.xlsx`, `.pdf`, `.jpg`, `.jpeg` o `.png`.
+- Ingestar fuentes de tipo `.md`, `.txt`, `.csv`, `.xml`, `.json`, `.js`, `.docx`, `.xlsx`, `.pdf`, `.jpg`, `.jpeg` o `.png`.
 - Generar embeddings para documentos y consultas con el mismo modelo y dimensiones compatibles.
 - Validar una configuración de Atlas Vector Search, embeddings o MCP server.
 
@@ -179,7 +179,7 @@ flowchart TD
     RunForce --> LoadFiles
 
     LoadFiles --> FileBranch{"Tipo de Archivo"}
-    FileBranch -- ".md, .txt, .csv, .xml, .docx, .xlsx" --> TextExtract["Extraer texto"]
+    FileBranch -- ".md, .txt, .csv, .xml, .json, .js, .docx, .xlsx" --> TextExtract["Extraer texto"]
     FileBranch -- ".pdf" --> PDFExtract["Extraer texto por página + renders"]
     FileBranch -- ".jpg, .jpeg, .png" --> ImgExtract["Extraer inputs RGB"]
 
@@ -229,7 +229,7 @@ El flujo principal paso a paso es el siguiente:
 
 El proyecto acepta documentos con estas extensiones:
 
-- `.md`, `.txt`, `.csv`, `.xml`
+- `.md`, `.txt`, `.csv`, `.xml`, `.json`, `.js`
 - `.docx`, `.xlsx`
 - `.pdf`
 - `.jpg`
@@ -239,7 +239,7 @@ El proyecto acepta documentos con estas extensiones:
 Los archivos se leen con `loaders.py`:
 
 - Markdown: procesa el texto, decodifica imágenes incrustadas en Base64 (`data:image/...`) y carga imágenes referenciadas localmente (`![alt](ruta)` o `<img src="...">`).
-- Texto (.txt, .csv, .xml) / Excel (.xlsx): se procesa como texto estructurado.
+- Texto (.txt, .csv, .xml, .json, .js) / Excel (.xlsx): se procesa como texto estructurado.
 - DOCX: extrae los párrafos de texto y todas las imágenes embebidas en el documento.
 - PDF: cada página se convierte a bloque multimodal (texto extraído + imagen renderizada).
 - Imagen: se convierte a RGB y se usa como entrada multimodal con Voyage AI.

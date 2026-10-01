@@ -5,7 +5,7 @@ import pymupdf
 from PIL import Image
 
 
-TEXT_EXTENSIONS = {".md", ".txt", ".csv", ".xml"}
+TEXT_EXTENSIONS = {".md", ".txt", ".csv", ".xml", ".json", ".js"}
 OFFICE_EXTENSIONS = {".docx", ".xlsx"}
 PDF_EXTENSIONS = {".pdf"}
 IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".png"}
