@@ -346,16 +346,103 @@ query_vector = voyage.embed_query("¿Cómo funciona Atlas Vector Search?")
 print(len(query_vector))
 ```
 
-## Requerimientos del índice vectorial en Atlas
+## Requerimientos y Definición del Índice Vectorial en Atlas
 
-Antes de usar la búsqueda real, debes crear un índice vectorial en MongoDB Atlas compatible con los embeddings generados. El proyecto usa `embedding` como campo vectorial por defecto en el servidor MCP.
+Antes de usar la búsqueda real, debes crear un índice de tipo **Atlas Vector Search** en MongoDB Atlas sobre la colección configurada (`knowledge`).
 
-Verifica que:
+### Definición JSON del Índice Vectorial (Atlas Vector Search Index)
 
-- El `path` del índice coincida con el campo que contiene el vector.
-- La dimensión del índice coincida con la del embedding generado (`1024` en este proyecto).
-- La métrica de similitud sea compatible con el modelo usado.
-- El nombre del índice coincida con `VECTOR_INDEX_NAME`.
+Crea un índice de búsqueda vectorial en MongoDB Atlas con la siguiente definición:
+
+```json
+{
+  "fields": [
+    {
+      "type": "vector",
+      "path": "embedding",
+      "numDimensions": 1024,
+      "similarity": "cosine"
+    }
+  ]
+}
+```
+
+> [!IMPORTANT]
+> - **Nombre del índice**: Debe coincidir con `VECTOR_INDEX_NAME` (por defecto: `vector_index`).
+> - **Campo (`path`)**: `embedding`.
+> - **Dimensiones (`numDimensions`)**: `1024` (producido por `voyage-4-large` y `voyage-multimodal-3.5`).
+> - **Métrica (`similarity`)**: `cosine` o `dotProduct`.
+
+---
+
+## Esquema del Documento en MongoDB (Schema & Metadata Spec)
+
+Cada fragmento o imagen procesada se persiste como un documento BSON con la siguiente estructura:
+
+```mermaid
+erDiagram
+    KNOWLEDGE_CHUNK {
+        ObjectId _id PK "Identificador único MongoDB"
+        string documentId "ID único del documento/chunk"
+        string checksum "Hash MD5 del archivo original"
+        object source "Información de origen"
+        string fileType "Extensión (.md, .pdf, .docx, .js, .json, etc.)"
+        string modality "Modalidad (text | image | multimodal)"
+        int page "Número de página (o null)"
+        int chunkIndex "Índice secuencial dentro del documento"
+        string text "Contenido textual del fragmento"
+        array_float embedding "Vector de 1024 dimensiones"
+        string embeddingModel "Modelo Voyage AI utilizado"
+        date createdAt "Timestamp ISO de inserción"
+    }
+```
+
+### Ejemplo de Documento en MongoDB:
+
+```json
+{
+  "_id": { "$oid": "664b3a123f89a9c1e0123456" },
+  "documentId": "manual_usuario_chunk_0",
+  "checksum": "d41d8cd98f00b204e9800998ecf8427e",
+  "source": {
+    "path": "/ruta/a/documentos/manual_usuario.docx",
+    "name": "manual_usuario.docx"
+  },
+  "fileType": ".docx",
+  "modality": "text",
+  "page": null,
+  "chunkIndex": 0,
+  "text": "Introducción y configuración del sistema...",
+  "embedding": [0.01234, -0.05678, 0.08912, "... (1024 floats)"],
+  "embeddingModel": "voyage-multimodal-3.5",
+  "createdAt": "2026-09-30T20:30:00.000Z"
+}
+```
+
+---
+
+## Configuración del Cliente MCP (Agent Client Integration)
+
+Para conectar este servidor MCP con clientes de IA (Claude Code, Claude Desktop, Antigravity, Cline, Gemini Code Assist, etc.), agrega la siguiente configuración en tu archivo de herramientas MCP (`claude_desktop_config.json`, `mcp_settings.json` o settings de tu entorno):
+
+```json
+{
+  "mcpServers": {
+    "mongodb-vector-skill": {
+      "command": "node",
+      "args": [
+        "/ruta/absoluta/a/mongodb-vector-skill/mcp-server.js"
+      ],
+      "env": {
+        "MONGODB_URI": "mongodb+srv://<usuario>:<password>@<cluster>/test?retryWrites=true&w=majority",
+        "MONGODB_DB": "knowledgeVectors",
+        "MONGODB_COLLECTION": "knowledge",
+        "VECTOR_INDEX_NAME": "vector_index"
+      }
+    }
+  }
+}
+```
 
 ## Estructura de archivos
 
