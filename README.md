@@ -313,27 +313,6 @@ Las herramientas disponibles son:
   
   Retorna los fragmentos o el documento que coincida con ese `documentId` usando un `find()` estándar de MongoDB.
 
-## Ingesta de documentos
-
-La forma más directa de procesar una carpeta nueva es:
-
-```bash
-python3 ingest.py /ruta/a/documentos
-```
-*(Si no pasas una ruta, el script usa `DOCUMENTS_PATH` o la ruta por defecto).*
-
-Si deseas **forzar la actualización o re-ingesta** de una carpeta completa o un archivo que ya fue procesado (y quieres borrar la versión anterior para evitar duplicados), utiliza:
-
-```bash
-python3 force_ingest.py /ruta/a/documentos
-```
-
-Ejemplo:
-
-```bash
-python3 ingest.py /Users/JACOLINV/Documents/docsEmb
-```
-
 ## Ejemplo de uso de embeddings
 
 Puedes generar un embedding para una consulta con Python:
