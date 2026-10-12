@@ -1,4 +1,4 @@
-# MongoDB Vector Search Skill
+# MongoDB Vector Search Skill v1.6.0
 
 Una skill para preparar conocimiento multimodal, generar embeddings con Voyage AI, almacenarlos en MongoDB Atlas y recuperarlos con búsqueda vectorial mediante un servidor MCP local.
 
