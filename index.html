@@ -337,5 +337,176 @@ print(len(query_vector))
 <li>Ejecuta <code>python3 ingest.py</code>.</li>
 <li>Inicia el MCP server y prueba <code>mongodb_vector_search</code> con un embedding de consulta real.</li>
 </ol>
+
+<div id="zoom-modal" class="zoom-modal">
+    <span class="zoom-close" onclick="closeZoom()">&times;</span>
+    <img id="zoom-img" class="zoom-content">
+</div>
+
+<style>
+    /* Styling for the modal */
+    .zoom-modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(15, 23, 42, 0.95);
+        overflow: hidden;
+    }
+    .zoom-close {
+        position: absolute;
+        top: 15px;
+        right: 35px;
+        color: #f1f1f1;
+        font-size: 40px;
+        font-weight: bold;
+        transition: 0.3s;
+        cursor: pointer;
+        z-index: 1001;
+    }
+    .zoom-close:hover,
+    .zoom-close:focus {
+        color: #38bdf8;
+        text-decoration: none;
+        cursor: pointer;
+    }
+    .zoom-content {
+        position: absolute;
+        transform-origin: 0 0;
+        cursor: grab;
+        max-width: none;
+        background-color: transparent;
+    }
+    .zoom-content:active {
+        cursor: grabbing;
+    }
+    /* Add pointer to original images */
+    img {
+        cursor: zoom-in;
+        transition: transform 0.2s ease;
+    }
+    img:hover {
+        transform: scale(1.02);
+    }
+</style>
+
+<script>
+    const modal = document.getElementById("zoom-modal");
+    const zoomImg = document.getElementById("zoom-img");
+    const images = document.querySelectorAll("img:not(.zoom-content)");
+    
+    let scale = 1;
+    let panning = false;
+    let pointX = 0;
+    let pointY = 0;
+    let startX = 0;
+    let startY = 0;
+
+    images.forEach(img => {
+        img.onclick = function() {
+            modal.style.display = "block";
+            zoomImg.src = this.src;
+            document.body.style.overflow = "hidden"; // Prevent background scroll
+            
+            // Wait for image to load to get dimensions if not cached
+            zoomImg.onload = initImageTransform;
+            if(zoomImg.complete) initImageTransform();
+        }
+    });
+
+    function initImageTransform() {
+        scale = 1;
+        
+        const imgWidth = zoomImg.naturalWidth || zoomImg.width || 800;
+        const imgHeight = zoomImg.naturalHeight || zoomImg.height || 600;
+        
+        const winWidth = window.innerWidth;
+        const winHeight = window.innerHeight;
+        
+        const scaleX = winWidth / imgWidth;
+        const scaleY = winHeight / imgHeight;
+        let initialScale = Math.min(scaleX, scaleY) * 0.85; // 85% of screen
+        
+        // Prevent huge upscale for small SVGs initially
+        if (initialScale > 2) initialScale = 2; 
+        
+        scale = initialScale;
+        
+        pointX = (winWidth - (imgWidth * scale)) / 2;
+        pointY = (winHeight - (imgHeight * scale)) / 2;
+        
+        setTransform();
+    }
+
+    function closeZoom() {
+        modal.style.display = "none";
+        document.body.style.overflow = "auto";
+    }
+
+    modal.onclick = function(e) {
+        if (e.target === modal) {
+            closeZoom();
+        }
+    }
+
+    function setTransform() {
+        zoomImg.style.transform = `translate(${pointX}px, ${pointY}px) scale(${scale})`;
+    }
+
+    modal.onmousedown = function (e) {
+        e.preventDefault();
+        startX = e.clientX - pointX;
+        startY = e.clientY - pointY;
+        panning = true;
+    }
+
+    modal.onmouseup = function (e) {
+        panning = false;
+    }
+
+    modal.onmouseleave = function (e) {
+        panning = false;
+    }
+
+    modal.onmousemove = function (e) {
+        e.preventDefault();
+        if (!panning) return;
+        pointX = e.clientX - startX;
+        pointY = e.clientY - startY;
+        setTransform();
+    }
+
+    modal.onwheel = function (e) {
+        e.preventDefault();
+        const xs = (e.clientX - pointX) / scale;
+        const ys = (e.clientY - pointY) / scale;
+        
+        // Handle trackpad pinch and mouse wheel
+        let delta = e.deltaY;
+        let zoomFactor = 1.1;
+        
+        if (e.ctrlKey) {
+            // Trackpad pinch-to-zoom
+            zoomFactor = 1 + (Math.abs(delta) * 0.01);
+            if (delta > 0) scale /= zoomFactor;
+            else scale *= zoomFactor;
+        } else {
+            // Mouse wheel
+            if (delta > 0) scale /= zoomFactor;
+            else scale *= zoomFactor;
+        }
+        
+        if (scale < 0.1) scale = 0.1;
+        if (scale > 20) scale = 20;
+        
+        pointX = e.clientX - xs * scale;
+        pointY = e.clientY - ys * scale;
+        setTransform();
+    }
+</script>
 </body>
+
 </html>
