@@ -1,0 +1,79 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 320">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&amp;display=swap');
+    text { font-family: 'JetBrains Mono', 'SF Mono', 'Cascadia Code', monospace; }
+  </style>
+  <defs>
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#1e293b" stroke-width="0.5"/>
+    </pattern>
+  </defs>
+  <!-- Background -->
+  <rect width="100%" height="100%" fill="#0f172a"/>
+  <rect width="100%" height="100%" fill="url(#grid)"/>
+
+  <!-- Entity Box -->
+  <g transform="translate(40, 40)">
+    <!-- Mask -->
+    <rect width="520" height="240" rx="6" fill="#0f172a"/>
+    <!-- Box using Tertiary Color (Database) -->
+    <rect width="520" height="240" rx="6" fill="rgba(76,29,149,0.4)" stroke="#a78bfa" stroke-width="1.5"/>
+    
+    <!-- Title Compartment -->
+    <text x="260" y="24" fill="white" font-size="12" font-weight="700" text-anchor="middle">KNOWLEDGE_CHUNK</text>
+    
+    <!-- Divider -->
+    <line x1="0" y1="35" x2="520" y2="35" stroke="#a78bfa" stroke-width="0.5" stroke-opacity="0.5"/>
+    
+    <!-- Attributes -->
+    <text x="15" y="55" fill="#fbbf24" font-size="10" font-weight="700">PK</text>
+    <text x="40" y="55" fill="#a78bfa" font-size="10">ObjectId</text>
+    <text x="110" y="55" fill="white" font-size="10">_id</text>
+    <text x="210" y="55" fill="#94a3b8" font-size="10">"Identificador único MongoDB"</text>
+
+    <text x="40" y="70" fill="#a78bfa" font-size="10">string</text>
+    <text x="110" y="70" fill="white" font-size="10">documentId</text>
+    <text x="210" y="70" fill="#94a3b8" font-size="10">"ID único del documento/chunk"</text>
+
+    <text x="40" y="85" fill="#a78bfa" font-size="10">string</text>
+    <text x="110" y="85" fill="white" font-size="10">checksum</text>
+    <text x="210" y="85" fill="#94a3b8" font-size="10">"Hash MD5 del archivo original"</text>
+
+    <text x="40" y="100" fill="#a78bfa" font-size="10">object</text>
+    <text x="110" y="100" fill="white" font-size="10">source</text>
+    <text x="210" y="100" fill="#94a3b8" font-size="10">"Información de origen"</text>
+
+    <text x="40" y="115" fill="#a78bfa" font-size="10">string</text>
+    <text x="110" y="115" fill="white" font-size="10">fileType</text>
+    <text x="210" y="115" fill="#94a3b8" font-size="10">"Extensión (.md, .pdf, .docx, .js, .json, etc.)"</text>
+
+    <text x="40" y="130" fill="#a78bfa" font-size="10">string</text>
+    <text x="110" y="130" fill="white" font-size="10">modality</text>
+    <text x="210" y="130" fill="#94a3b8" font-size="10">"Modalidad (text | image | multimodal)"</text>
+
+    <text x="40" y="145" fill="#a78bfa" font-size="10">int</text>
+    <text x="110" y="145" fill="white" font-size="10">page</text>
+    <text x="210" y="145" fill="#94a3b8" font-size="10">"Número de página (o null)"</text>
+
+    <text x="40" y="160" fill="#a78bfa" font-size="10">int</text>
+    <text x="110" y="160" fill="white" font-size="10">chunkIndex</text>
+    <text x="210" y="160" fill="#94a3b8" font-size="10">"Índice secuencial dentro del documento"</text>
+
+    <text x="40" y="175" fill="#a78bfa" font-size="10">string</text>
+    <text x="110" y="175" fill="white" font-size="10">text</text>
+    <text x="210" y="175" fill="#94a3b8" font-size="10">"Contenido textual del fragmento"</text>
+
+    <text x="40" y="190" fill="#a78bfa" font-size="10">array_float</text>
+    <text x="110" y="190" fill="white" font-size="10">embedding</text>
+    <text x="210" y="190" fill="#94a3b8" font-size="10">"Vector de 1024 dimensiones"</text>
+
+    <text x="40" y="205" fill="#a78bfa" font-size="10">string</text>
+    <text x="110" y="205" fill="white" font-size="10">embeddingModel</text>
+    <text x="210" y="205" fill="#94a3b8" font-size="10">"Modelo Voyage AI utilizado"</text>
+
+    <text x="40" y="220" fill="#a78bfa" font-size="10">date</text>
+    <text x="110" y="220" fill="white" font-size="10">createdAt</text>
+    <text x="210" y="220" fill="#94a3b8" font-size="10">"Timestamp ISO de inserción"</text>
+
+  </g>
+</svg>

@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MongoDB Vector Search Skill</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; color: #333; max-width: 800px; margin: 0 auto; padding: 2rem; background-color: #0f172a; color: #e2e8f0; }
+        h1, h2, h3 { color: #f8fafc; border-bottom: 1px solid #1e293b; padding-bottom: 0.3em; }
+        pre { background-color: #1e293b; padding: 16px; border-radius: 6px; overflow: auto; }
+        code { font-family: ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, Liberation Mono, monospace; background-color: rgba(255,255,255,0.1); padding: 0.2em 0.4em; border-radius: 6px; }
+        pre code { background-color: transparent; padding: 0; }
+        table { border-collapse: collapse; width: 100%; margin-bottom: 16px; }
+        th, td { border: 1px solid #334155; padding: 6px 13px; }
+        th { background-color: #1e293b; font-weight: 600; }
+        img { max-width: 100%; box-sizing: content-box; background-color: transparent; }
+        a { color: #38bdf8; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        blockquote { border-left: 4px solid #3b82f6; padding: 0 1em; color: #94a3b8; margin: 0; }
+    </style>
+</head>
+<body>
+<h1>MongoDB Vector Search Skill v1.6.0</h1>
+<p>Una skill para preparar conocimiento multimodal, generar embeddings con Voyage AI, almacenarlos en MongoDB Atlas y recuperarlos con búsqueda vectorial mediante un servidor MCP local.</p>
+<h2>Propósito</h2>
+<p>Este proyecto permite:</p>
+<ul>
+<li>Ingestar documentos en formato Markdown, Texto (txt, csv, xml, json, js), Office (docx, xlsx), PDF e imágenes.</li>
+<li>Dividir el contenido en chunks para mejorar la recuperación semántica.</li>
+<li>Generar embeddings con Voyage AI.</li>
+<li>Guardar los documentos y sus vectores en MongoDB Atlas.</li>
+<li>Notificar automáticamente a Google Chat (Webhook) las subidas y los reemplazos de documentos.</li>
+<li>Ejecutar una búsqueda vectorial a través del tool <code>mongodb_vector_search</code> expuesto por <code>mcp-server.js</code>.</li>
+</ul>
+<p>La idea principal es soportar un flujo de Retrieval-Augmented Generation (RAG) o búsqueda semántica sobre documentos locales.</p>
+<h2>¿Cuándo usar esta skill?</h2>
+<p>Es útil cuando necesitas:</p>
+<ul>
+<li>Construir una búsqueda semántica sobre documentación técnica o conocimiento interno.</li>
+<li>Ingestar fuentes de tipo <code>.md</code>, <code>.txt</code>, <code>.csv</code>, <code>.xml</code>, <code>.json</code>, <code>.js</code>, <code>.docx</code>, <code>.xlsx</code>, <code>.pdf</code>, <code>.jpg</code>, <code>.jpeg</code> o <code>.png</code>.</li>
+<li>Generar embeddings para documentos y consultas con el mismo modelo y dimensiones compatibles.</li>
+<li>Validar una configuración de Atlas Vector Search, embeddings o MCP server.</li>
+</ul>
+<h2>Requisitos</h2>
+<p>Antes de usar la skill debes tener:</p>
+<ul>
+<li>Node.js y npm instalados.</li>
+<li>Python 3 disponible en el entorno activo.</li>
+<li>Una instancia de MongoDB Atlas con soporte a Atlas Vector Search.</li>
+<li>Una API key válida de Voyage AI.</li>
+<li>Un archivo <code>.env</code> con las variables necesarias.</li>
+</ul>
+<h2>Instalación</h2>
+<ol>
+<li>Instala dependencias de Node:</li>
+</ol>
+<pre><code class="language-bash">npm install
+</code></pre>
+<ol>
+<li>Instala dependencias de Python requeridas por la ingesta y los embeddings:</li>
+</ol>
+<pre><code class="language-bash">python3 -m pip install pymupdf pillow voyageai python-dotenv python-docx openpyxl
+</code></pre>
+<ol>
+<li>Crea un archivo <code>.env</code> en la raíz del proyecto con variables como estas:</li>
+</ol>
+<pre><code class="language-env">MONGODB_URI=&quot;mongodb+srv://&lt;usuario&gt;:&lt;password&gt;@&lt;cluster&gt;/test?retryWrites=true&amp;w=majority&quot;
+MONGODB_DB=&quot;knowledgeVectors&quot;
+MONGODB_COLLECTION=&quot;knowledge&quot;
+VECTOR_INDEX_NAME=&quot;vector_index&quot;
+VOYAGE_API_KEY=&quot;&lt;tu_api_key&gt;&quot;
+DOCUMENTS_PATH=&quot;/ruta/a/documentos&quot;
+GOOGLE_CHAT_WEBHOOK_URL=&quot;https://chat.googleapis.com/...&quot;
+</code></pre>
+<blockquote>
+<p>El archivo <code>.env</code> no debe subirse al repositorio si incluye secretos reales.</p>
+</blockquote>
+<h2>Variables de entorno relevantes</h2>
+<p>Estas son las variables que usa el proyecto:</p>
+<ul>
+<li><code>MONGODB_URI</code>: cadena de conexión a MongoDB Atlas.</li>
+<li><code>MONGODB_DB</code>: base de datos de destino. Por defecto: <code>knowledgeVectors</code>.</li>
+<li><code>MONGODB_COLLECTION</code>: colección donde se almacenan los chunks. Por defecto: <code>knowledge</code>.</li>
+<li><code>VECTOR_INDEX_NAME</code>: nombre del índice vectorial en Atlas. Por defecto: <code>vector_index</code>.</li>
+<li><code>VOYAGE_API_KEY</code>: clave para el servicio de embeddings de Voyage AI.</li>
+<li><code>DOCUMENTS_PATH</code>: ruta por defecto para el directorio con documentos a ingerir.</li>
+<li><code>CHUNK_SIZE</code>: longitud aproximada de cada chunk de texto.</li>
+<li><code>CHUNK_OVERLAP_SENTENCES</code>: superposición entre chunks.</li>
+<li><code>GOOGLE_CHAT_WEBHOOK_URL</code>: (Opcional) URL del webhook de Google Chat para enviar notificaciones de subidas y actualizaciones de documentos.</li>
+<li><code>EMBED_BATCH_SIZE</code>: tamaño del lote para embeding en batch.</li>
+</ul>
+<h2>Flujo de trabajo y Arquitectura (Architecture &amp; Workflow)</h2>
+<p>La arquitectura de esta skill se divide en dos fases principales: <strong>Ingesta de Datos</strong> (Python) y <strong>Búsqueda Vectorial/MCP</strong> (Node.js). Ambos procesos interactúan con servicios de Inteligencia Artificial (Voyage AI) y persistencia en la nube (MongoDB Atlas).</p>
+<h3>Diagrama de Arquitectura de la Skill</h3>
+<p><img alt="Diagrama de Arquitectura" src="diagrams/architecture.svg" /></p>
+<h3>Diagrama de Flujo de Todos los Caminos Posibles (Decision Flowchart)</h3>
+<p>El siguiente diagrama detalla todas las rutas de ejecución posibles coordinadas por el <strong>Agente IA / Usuario</strong>, incluyendo validación estática, ingesta multimodal, búsqueda semántica vía MCP y resolución de fallos:</p>
+<p><img alt="Diagrama de Flujo de Todos los Caminos Posibles" src="diagrams/flowchart.svg" /></p>
+<p>El flujo principal paso a paso es el siguiente:</p>
+<h3>1. Preparar los documentos</h3>
+<p>El proyecto acepta documentos con estas extensiones:</p>
+<ul>
+<li><code>.md</code>, <code>.txt</code>, <code>.csv</code>, <code>.xml</code>, <code>.json</code>, <code>.js</code></li>
+<li><code>.docx</code>, <code>.xlsx</code></li>
+<li><code>.pdf</code></li>
+<li><code>.jpg</code></li>
+<li><code>.jpeg</code></li>
+<li><code>.png</code></li>
+</ul>
+<p>Los archivos se leen con <code>loaders.py</code>:</p>
+<ul>
+<li>Markdown: procesa el texto, decodifica imágenes incrustadas en Base64 (<code>data:image/...</code>) y carga imágenes referenciadas localmente (<code>![alt](ruta)</code> o <code>&lt;img src="..."&gt;</code>).</li>
+<li>Texto (.txt, .csv, .xml, .json, .js) / Excel (.xlsx): se procesa como texto estructurado.</li>
+<li>DOCX: extrae los párrafos de texto y todas las imágenes embebidas en el documento.</li>
+<li>PDF: cada página se convierte a bloque multimodal (texto extraído + imagen renderizada).</li>
+<li>Imagen: se convierte a RGB y se usa como entrada multimodal con Voyage AI.</li>
+</ul>
+<h3>2. Dividir contenido en chunks</h3>
+<p><code>chunker.py</code> segmenta el texto para crear bloques manejables. El proceso genera chunks con metadata como:</p>
+<ul>
+<li><code>documentId</code></li>
+<li><code>checksum</code></li>
+<li><code>source.path</code></li>
+<li><code>fileType</code></li>
+<li><code>modality</code></li>
+<li><code>page</code></li>
+<li><code>chunkIndex</code></li>
+<li><code>text</code></li>
+<li><code>embedding</code></li>
+<li><code>embeddingModel</code></li>
+</ul>
+<p>La lógica de <code>ingest.py</code> evita volver a insertar archivos sin cambios usando un checksum MD5.</p>
+<h3>3. Generar embeddings</h3>
+<p><code>embeddings.py</code> encapsula la API de Voyage AI.</p>
+<p>El proyecto usa modelos configurados por extensión, y todos los documentos que compartan un mismo índice vectorial deben usar un modelo compatible con el mismo índice.</p>
+<p>Modelos por defecto:</p>
+<ul>
+<li>Texto: <code>voyage-4-large</code></li>
+<li>Multimodal: <code>voyage-multimodal-3.5</code></li>
+<li>Dimensión del embedding: <code>1024</code></li>
+</ul>
+<h3>4. Persistir en MongoDB Atlas</h3>
+<p><code>mongodb.py</code> gestiona:</p>
+<ul>
+<li>conexión a MongoDB</li>
+<li>inserción masiva de documentos embebidos</li>
+<li>comprobación de checksums</li>
+<li>eliminación de documentos previos por <code>documentId</code></li>
+</ul>
+<h3>5. Ejecutar búsqueda vectorial</h3>
+<p>El servidor MCP se inicia con:</p>
+<pre><code class="language-bash">node mcp-server.js
+</code></pre>
+<p>Las herramientas disponibles son:</p>
+<ul>
+<li><strong><code>mongodb_vector_search</code></strong>: Búsqueda semántica usando <code>$vectorSearch</code>.
+  Parámetros:</li>
+<li><code>vector</code>: arreglo de números que representa el embedding de la consulta.</li>
+<li><code>limit</code>: número máximo de resultados, por defecto <code>5</code>.</li>
+<li><code>numCandidates</code>: cantidad de candidatos a evaluar, por defecto <code>50</code>.</li>
+<li><code>path</code>: campo vectorial dentro del documento, por defecto <code>embedding</code>.</li>
+</ul>
+<p>El pipeline usa <code>$vectorSearch</code> de MongoDB Atlas y luego proyecta:
+  - <code>documentId</code>
+  - <code>text</code>
+  - <code>page</code>
+  - <code>chunkIndex</code>
+  - <code>fileType</code>
+  - <code>score</code> usando <code>$meta: "vectorSearchScore"</code></p>
+<ul>
+<li><strong><code>find_by_document_id</code></strong>: Búsqueda exacta por ID de documento.
+  Parámetros:</li>
+<li><code>documentId</code>: (Requerido) string que representa el ID del documento a buscar.</li>
+</ul>
+<p>Retorna los fragmentos o el documento que coincida con ese <code>documentId</code> usando un <code>find()</code> estándar de MongoDB.</p>
+<h2>Ingesta de documentos</h2>
+<p>La forma más directa de procesar una carpeta nueva es:</p>
+<pre><code class="language-bash">python3 ingest.py /ruta/a/documentos
+</code></pre>
+<p><em>(Si no pasas una ruta, el script usa <code>DOCUMENTS_PATH</code> o la ruta por defecto).</em></p>
+<p>Si deseas <strong>forzar la actualización o re-ingesta</strong> de una carpeta completa o un archivo que ya fue procesado (y quieres borrar la versión anterior para evitar duplicados), utiliza:</p>
+<pre><code class="language-bash">python3 force_ingest.py /ruta/a/documentos
+</code></pre>
+<p>Ejemplo:</p>
+<pre><code class="language-bash">python3 ingest.py /Users/JACOLINV/Documents/docsEmb
+</code></pre>
+<h2>Ejemplo de uso de embeddings</h2>
+<p>Puedes generar un embedding para una consulta con Python:</p>
+<pre><code class="language-python">from embeddings import VoyageEmbedding
+
+voyage = VoyageEmbedding(api_key=&quot;&lt;tu_api_key&gt;&quot;)
+query_vector = voyage.embed_query(&quot;¿Cómo funciona Atlas Vector Search?&quot;)
+print(len(query_vector))
+</code></pre>
+<h2>Requerimientos y Definición del Índice Vectorial en Atlas</h2>
+<p>Antes de usar la búsqueda real, debes crear un índice de tipo <strong>Atlas Vector Search</strong> en MongoDB Atlas sobre la colección configurada (<code>knowledge</code>).</p>
+<h3>Definición JSON del Índice Vectorial (Atlas Vector Search Index)</h3>
+<p>Crea un índice de búsqueda vectorial en MongoDB Atlas con la siguiente definición:</p>
+<pre><code class="language-json">{
+  &quot;fields&quot;: [
+    {
+      &quot;type&quot;: &quot;vector&quot;,
+      &quot;path&quot;: &quot;embedding&quot;,
+      &quot;numDimensions&quot;: 1024,
+      &quot;similarity&quot;: &quot;cosine&quot;
+    }
+  ]
+}
+</code></pre>
+<blockquote>
+<p>[!IMPORTANT]
+- <strong>Nombre del índice</strong>: Debe coincidir con <code>VECTOR_INDEX_NAME</code> (por defecto: <code>vector_index</code>).
+- <strong>Campo (<code>path</code>)</strong>: <code>embedding</code>.
+- <strong>Dimensiones (<code>numDimensions</code>)</strong>: <code>1024</code> (producido por <code>voyage-4-large</code> y <code>voyage-multimodal-3.5</code>).
+- <strong>Métrica (<code>similarity</code>)</strong>: <code>cosine</code> o <code>dotProduct</code>.</p>
+</blockquote>
+<hr />
+<h2>Esquema del Documento en MongoDB (Schema &amp; Metadata Spec)</h2>
+<p>Cada fragmento o imagen procesada se persiste como un documento BSON con la siguiente estructura:</p>
+<p><img alt="Esquema del Documento en MongoDB" src="diagrams/er.svg" /></p>
+<h3>Ejemplo de Documento en MongoDB:</h3>
+<pre><code class="language-json">{
+  &quot;_id&quot;: { &quot;$oid&quot;: &quot;664b3a123f89a9c1e0123456&quot; },
+  &quot;documentId&quot;: &quot;manual_usuario_chunk_0&quot;,
+  &quot;checksum&quot;: &quot;d41d8cd98f00b204e9800998ecf8427e&quot;,
+  &quot;source&quot;: {
+    &quot;path&quot;: &quot;/ruta/a/documentos/manual_usuario.docx&quot;,
+    &quot;name&quot;: &quot;manual_usuario.docx&quot;
+  },
+  &quot;fileType&quot;: &quot;.docx&quot;,
+  &quot;modality&quot;: &quot;text&quot;,
+  &quot;page&quot;: null,
+  &quot;chunkIndex&quot;: 0,
+  &quot;text&quot;: &quot;Introducción y configuración del sistema...&quot;,
+  &quot;embedding&quot;: [0.01234, -0.05678, 0.08912, &quot;... (1024 floats)&quot;],
+  &quot;embeddingModel&quot;: &quot;voyage-multimodal-3.5&quot;,
+  &quot;createdAt&quot;: &quot;2026-09-30T20:30:00.000Z&quot;
+}
+</code></pre>
+<hr />
+<h2>Configuración del Cliente MCP (Agent Client Integration)</h2>
+<p>Para conectar este servidor MCP con clientes de IA (Claude Code, Claude Desktop, Antigravity, Cline, Gemini Code Assist, etc.), agrega la siguiente configuración en tu archivo de herramientas MCP (<code>claude_desktop_config.json</code>, <code>mcp_settings.json</code> o settings de tu entorno):</p>
+<pre><code class="language-json">{
+  &quot;mcpServers&quot;: {
+    &quot;mongodb-vector-skill&quot;: {
+      &quot;command&quot;: &quot;node&quot;,
+      &quot;args&quot;: [
+        &quot;/ruta/absoluta/a/mongodb-vector-skill/mcp-server.js&quot;
+      ],
+      &quot;env&quot;: {
+        &quot;MONGODB_URI&quot;: &quot;mongodb+srv://&lt;usuario&gt;:&lt;password&gt;@&lt;cluster&gt;/test?retryWrites=true&amp;w=majority&quot;,
+        &quot;MONGODB_DB&quot;: &quot;knowledgeVectors&quot;,
+        &quot;MONGODB_COLLECTION&quot;: &quot;knowledge&quot;,
+        &quot;VECTOR_INDEX_NAME&quot;: &quot;vector_index&quot;
+      }
+    }
+  }
+}
+</code></pre>
+<h2>Estructura de archivos</h2>
+<pre><code class="language-text">.
+├── chunker.py
+├── embeddings.py
+├── force_ingest.py
+├── ingest.py
+├── loaders.py
+├── mcp-server.js
+├── mongodb.py
+├── package.json
+├── README.md
+├── SKILL.md
+└── SKILL_old.md
+</code></pre>
+<h3>Descripción por archivo</h3>
+<ul>
+<li><code>ingest.py</code>: procesa documentos y genera embeddings para insertarlos en MongoDB.</li>
+<li><code>force_ingest.py</code>: herramienta que fuerza la re-ingesta de archivos, borrando versiones o duplicados previos por nombre.</li>
+<li><code>loaders.py</code>: cargadores para Markdown, PDF e imágenes.</li>
+<li><code>embeddings.py</code>: wrapper para Voyage AI y generación de embeddings.</li>
+<li><code>chunker.py</code>: división del texto en chunks inteligentes.</li>
+<li><code>mongodb.py</code>: operaciones de persistencia y validación en MongoDB.</li>
+<li><code>mcp-server.js</code>: servidor MCP que expone la herramienta de búsqueda vectorial.</li>
+<li><code>SKILL.md</code>: definición de la skill para uso del entorno de agentes.</li>
+</ul>
+<h2>Validación</h2>
+<p>Para validar el proyecto de forma estática, ejecuta:</p>
+<pre><code class="language-bash">npm test
+</code></pre>
+<p>Este comando comprueba:</p>
+<ul>
+<li>sintaxis JavaScript de <code>mcp-server.js</code></li>
+<li>compilación de archivos Python con <code>compileall</code></li>
+</ul>
+<h2>Solución de problemas</h2>
+<h3>Error de conexión a MongoDB</h3>
+<ul>
+<li>Revisa que <code>MONGODB_URI</code> sea válida.</li>
+<li>Verifica que el cluster esté disponible y que expongas la base de datos correcta.</li>
+<li>Comprueba el nombre del índice vectorial.</li>
+</ul>
+<h3>Error por falta de variables de entorno</h3>
+<ul>
+<li>Asegúrate de cargar <code>.env</code> antes de ejecutar la ingesta.</li>
+<li>Verifica que <code>VOYAGE_API_KEY</code> y <code>MONGODB_URI</code> existan.</li>
+</ul>
+<h3>Resultados vacíos o pobres</h3>
+<ul>
+<li>Confirma que el modelo usado para documentos y consultas sea compatible.</li>
+<li>Revisa que la dimensión del vector coincida con la del índice.</li>
+<li>Mejora la calidad de los chunks o reduce la cantidad de contenido por bloque.</li>
+</ul>
+<h3>Errores de modelo multimodal</h3>
+<ul>
+<li>Algunas extensiones como PDF, JPG, JPEG y PNG requieren un modelo multimodal.</li>
+<li>Si usas un modelo no compatible, la ingesta puede fallar en <code>build_chunks()</code>.</li>
+</ul>
+<h2>Resumen</h2>
+<p>Esta skill combina:</p>
+<ul>
+<li>carga de documentos,</li>
+<li>generación de embeddings,</li>
+<li>almacenamiento vectorial en MongoDB Atlas,</li>
+<li>recuperación semántica con <code>mongodb_vector_search</code>.</li>
+</ul>
+<p>Es una base útil para construir un RAG local o un sistema de búsqueda por similitud sobre documentación y conocimiento digital.</p>
+<h2>Referencias internas</h2>
+<ul>
+<li><code>SKILL.md</code>: especificación de la skill.</li>
+<li><code>mcp-server.js</code>: herramienta de acceso a la búsqueda vectorial.</li>
+<li><code>ingest.py</code>: flujo principal de ingesta y embeddings.</li>
+</ul>
+<h2>Siguiente paso recomendado</h2>
+<ol>
+<li>Configura <code>.env</code> con tus credenciales reales.</li>
+<li>Define el índice vectorial en Atlas.</li>
+<li>Añade una carpeta de documentos de prueba.</li>
+<li>Ejecuta <code>python3 ingest.py</code>.</li>
+<li>Inicia el MCP server y prueba <code>mongodb_vector_search</code> con un embedding de consulta real.</li>
+</ol>
+</body>
+</html>

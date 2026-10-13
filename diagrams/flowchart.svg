@@ -1,0 +1,466 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1650 1950">
+  <defs>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&amp;display=swap');
+      text { font-family: 'JetBrains Mono', 'SF Mono', 'Cascadia Code', monospace; }
+    </style>
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#1e293b" stroke-width="0.5"/>
+    </pattern>
+    <marker id="arrow" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#64748b"/>
+    </marker>
+    <marker id="arrow-rose" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#fb7185"/>
+    </marker>
+  </defs>
+
+  <!-- Background Layer -->
+  <rect width="100%" height="100%" fill="#0f172a"/>
+  <rect width="100%" height="100%" fill="url(#grid)"/>
+
+  <!-- Subgraph Boundary -->
+  <rect x="1000" y="1360" width="550" height="360" rx="12" fill="none" stroke="#fb7185" stroke-width="1" stroke-dasharray="8,4"/>
+  <text x="1012" y="1380" fill="#fb7185" font-size="12" font-weight="600">Interpretación y Diagnóstico de Fallos</text>
+
+  <!-- Arrow Paths Layer -->
+  <g id="arrows">
+    <!-- Main Top -->
+    <path d="M 750 85 L 750 130" fill="none" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrow)"/>
+    <path d="M 750 190 L 750 220" fill="none" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrow)"/>
+    <!-- Branch A -->
+    <path d="M 650 280 L 300 280 L 300 390" fill="none" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrow)"/>
+    <!-- Branch B -->
+    <path d="M 750 340 L 750 380" fill="none" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrow)"/>
+    <!-- Branch C -->
+    <path d="M 850 280 L 1300 280 L 1300 390" fill="none" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrow)"/>
+    
+    <!-- A logic -->
+    <path d="M 300 450 L 300 480" fill="none" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrow)"/>
+    <path d="M 300 600 L 300 650" fill="none" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrow)"/>
+    <path d="M 200 540 L 100 540 L 100 510" fill="none" stroke="#fb7185" stroke-width="1.5" stroke-dasharray="4,4" marker-end="url(#arrow-rose)"/>
+    <path d="M 100 450 L 100 420 L 180 420" fill="none" stroke="#fb7185" stroke-width="1.5" stroke-dasharray="4,4" marker-end="url(#arrow-rose)"/>
+    <path d="M 300 710 L 300 755" fill="none" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+    <!-- B logic -->
+    <path d="M 750 500 L 750 530" fill="none" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrow)"/>
+    <path d="M 850 440 L 950 440" fill="none" stroke="#fb7185" stroke-width="1.5" stroke-dasharray="4,4" marker-end="url(#arrow-rose)"/>
+    <path d="M 670 580 L 600 580 L 600 670" fill="none" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrow)"/>
+    <path d="M 830 580 L 900 580 L 900 670" fill="none" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrow)"/>
+    <path d="M 600 730 L 600 750 L 750 750 L 750 770" fill="none" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrow)"/>
+    <path d="M 900 730 L 900 750 L 750 750 L 750 770" fill="none" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrow)"/>
+    <path d="M 750 830 L 750 870" fill="none" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrow)"/>
+    <path d="M 670 920 L 550 920 L 550 1010" fill="none" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrow)"/>
+    <path d="M 750 970 L 750 1010" fill="none" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrow)"/>
+    <path d="M 830 920 L 950 920 L 950 1010" fill="none" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+    <path d="M 550 1070 L 550 1085 L 650 1085 L 650 1100" fill="none" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrow)"/>
+    <path d="M 750 1070 L 750 1085 L 650 1085 L 650 1100" fill="none" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrow)"/>
+    <path d="M 950 1070 L 950 1330 L 750 1330 L 750 1350" fill="none" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrow)"/>
+    
+    <path d="M 540 1160 L 450 1160 L 450 1250" fill="none" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrow)"/>
+    <path d="M 650 1220 L 650 1330 L 750 1330 L 750 1350" fill="none" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrow)"/>
+    <path d="M 450 1310 L 450 1330 L 750 1330 L 750 1350" fill="none" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrow)"/>
+    
+    <path d="M 750 1410 L 750 1450" fill="none" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrow)"/>
+    <path d="M 750 1510 L 750 1540" fill="none" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrow)"/>
+    
+    <path d="M 640 1600 L 550 1600 L 550 1690" fill="none" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrow)"/>
+    <path d="M 750 1660 L 750 1815" fill="none" stroke="#fb7185" stroke-width="1.5" stroke-dasharray="4,4" marker-end="url(#arrow-rose)"/>
+    <path d="M 550 1750 L 550 1790 L 750 1790 L 750 1815" fill="none" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+    <!-- C logic -->
+    <path d="M 1300 450 L 1300 480" fill="none" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrow)"/>
+    <path d="M 1300 600 L 1300 650" fill="none" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrow)"/>
+    <path d="M 1400 540 L 1520 540 L 1520 650" fill="none" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrow)"/>
+    <path d="M 1300 710 L 1300 750" fill="none" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrow)"/>
+    <path d="M 1300 810 L 1300 850" fill="none" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrow)"/>
+    <path d="M 1300 910 L 1300 940" fill="none" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrow)"/>
+    <path d="M 1300 1060 L 1300 1110" fill="none" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrow)"/>
+    <path d="M 1190 1000 L 1040 1000 L 1040 1110" fill="none" stroke="#fb7185" stroke-width="1.5" stroke-dasharray="4,4" marker-end="url(#arrow-rose)"/>
+    <path d="M 1300 1170 L 1300 1235" fill="none" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrow)"/>
+    <path d="M 1520 710 L 1520 750" fill="none" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrow)"/>
+    <path d="M 1520 810 L 1520 1210 L 1300 1210 L 1300 1235" fill="none" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+    <!-- Error Diagnostics Routing -->
+    <path d="M 1130 440 L 1170 440 L 1170 1380 L 1275 1380 L 1275 1400" fill="none" stroke="#fb7185" stroke-width="1.5" stroke-dasharray="4,4" marker-end="url(#arrow-rose)"/>
+    <path d="M 1040 1170 L 1040 1380 L 1275 1380 L 1275 1400" fill="none" stroke="#fb7185" stroke-width="1.5" stroke-dasharray="4,4" marker-end="url(#arrow-rose)"/>
+
+    <path d="M 1275 1500 L 1275 1610" fill="none" stroke="#fb7185" stroke-width="1.5" stroke-dasharray="4,4"/>
+    <path d="M 1275 1520 L 1150 1520 L 1150 1540" fill="none" stroke="#fb7185" stroke-width="1.5" stroke-dasharray="4,4" marker-end="url(#arrow-rose)"/>
+    <path d="M 1275 1520 L 1400 1520 L 1400 1540" fill="none" stroke="#fb7185" stroke-width="1.5" stroke-dasharray="4,4" marker-end="url(#arrow-rose)"/>
+    <path d="M 1275 1610 L 1150 1610 L 1150 1630" fill="none" stroke="#fb7185" stroke-width="1.5" stroke-dasharray="4,4" marker-end="url(#arrow-rose)"/>
+    <path d="M 1275 1610 L 1400 1610 L 1400 1630" fill="none" stroke="#fb7185" stroke-width="1.5" stroke-dasharray="4,4" marker-end="url(#arrow-rose)"/>
+  </g>
+
+  <!-- Node Layers -->
+  <!-- N1: UserPrompt -->
+  <g transform="translate(650, 35)">
+    <rect width="200" height="50" rx="25" fill="#0f172a"/>
+    <rect width="200" height="50" rx="25" fill="rgba(59,130,246,0.3)" stroke="#60a5fa" stroke-width="1.5"/>
+    <text x="100" y="29" fill="white" font-size="12" font-weight="600" text-anchor="middle">👤 Usuario / Prompt</text>
+  </g>
+
+  <!-- N2: Agent -->
+  <g transform="translate(630, 130)">
+    <rect width="240" height="60" rx="6" fill="#0f172a"/>
+    <rect width="240" height="60" rx="6" fill="rgba(6,78,59,0.4)" stroke="#34d399" stroke-width="1.5"/>
+    <text x="120" y="30" fill="white" font-size="12" font-weight="600" text-anchor="middle">🤖 Agente IA</text>
+    <text x="120" y="46" fill="#94a3b8" font-size="10" text-anchor="middle">(Evaluación de Intención)</text>
+  </g>
+
+  <!-- N3: TaskType -->
+  <g transform="translate(650, 220)">
+    <polygon points="100,0 200,60 100,120 0,60" fill="#0f172a"/>
+    <polygon points="100,0 200,60 100,120 0,60" fill="rgba(120,53,15,0.3)" stroke="#fbbf24" stroke-width="1.5"/>
+    <text x="100" y="56" fill="white" font-size="11" font-weight="600" text-anchor="middle">1. ¿Qué camino</text>
+    <text x="100" y="72" fill="white" font-size="11" font-weight="600" text-anchor="middle">ejecutar?</text>
+  </g>
+
+  <!-- N4: ValStatic -->
+  <g transform="translate(180, 390)">
+    <rect width="240" height="60" rx="6" fill="#0f172a"/>
+    <rect width="240" height="60" rx="6" fill="rgba(8,51,68,0.4)" stroke="#22d3ee" stroke-width="1.5"/>
+    <text x="120" y="30" fill="white" font-size="11" font-weight="600" text-anchor="middle">Ejecutar npm test</text>
+    <text x="120" y="46" fill="#94a3b8" font-size="9" text-anchor="middle">(Sintaxis JS y compilación Python)</text>
+  </g>
+
+  <!-- N5: CheckFrontmatter -->
+  <g transform="translate(200, 480)">
+    <polygon points="100,0 200,60 100,120 0,60" fill="#0f172a"/>
+    <polygon points="100,0 200,60 100,120 0,60" fill="rgba(120,53,15,0.3)" stroke="#fbbf24" stroke-width="1.5"/>
+    <text x="100" y="56" fill="white" font-size="11" font-weight="600" text-anchor="middle">¿Frontmatter &amp;</text>
+    <text x="100" y="72" fill="white" font-size="11" font-weight="600" text-anchor="middle">SKILL.md válidos?</text>
+  </g>
+
+  <!-- N6: FixStatic -->
+  <g transform="translate(10, 450)">
+    <rect width="180" height="60" rx="6" fill="#0f172a"/>
+    <rect width="180" height="60" rx="6" fill="rgba(8,51,68,0.4)" stroke="#22d3ee" stroke-width="1.5"/>
+    <text x="90" y="26" fill="white" font-size="11" font-weight="600" text-anchor="middle">Corregir errores de</text>
+    <text x="90" y="42" fill="#94a3b8" font-size="9" text-anchor="middle">código o metadatos</text>
+  </g>
+
+  <!-- N7: AgentReportReady -->
+  <g transform="translate(180, 650)">
+    <rect width="240" height="60" rx="6" fill="#0f172a"/>
+    <rect width="240" height="60" rx="6" fill="rgba(6,78,59,0.4)" stroke="#34d399" stroke-width="1.5"/>
+    <text x="120" y="26" fill="white" font-size="11" font-weight="600" text-anchor="middle">🤖 Agente: Reporta Workspace</text>
+    <text x="120" y="42" fill="#94a3b8" font-size="9" text-anchor="middle">listo sin credenciales</text>
+  </g>
+
+  <!-- N8: Ready -->
+  <g transform="translate(240, 755)">
+    <rect width="120" height="50" rx="25" fill="#0f172a"/>
+    <rect width="120" height="50" rx="25" fill="rgba(59,130,246,0.3)" stroke="#60a5fa" stroke-width="1.5"/>
+    <text x="60" y="29" fill="white" font-size="12" font-weight="600" text-anchor="middle">Listo</text>
+  </g>
+
+  <!-- N9: CheckCredsIngest -->
+  <g transform="translate(650, 380)">
+    <polygon points="100,0 200,60 100,120 0,60" fill="#0f172a"/>
+    <polygon points="100,0 200,60 100,120 0,60" fill="rgba(120,53,15,0.3)" stroke="#fbbf24" stroke-width="1.5"/>
+    <text x="100" y="56" fill="white" font-size="11" font-weight="600" text-anchor="middle">¿Credenciales .env</text>
+    <text x="100" y="72" fill="white" font-size="11" font-weight="600" text-anchor="middle">presentes?</text>
+  </g>
+
+  <!-- N10: ErrCreds -->
+  <g transform="translate(950, 410)">
+    <rect width="180" height="60" rx="6" fill="#0f172a"/>
+    <rect width="180" height="60" rx="6" fill="rgba(136,19,55,0.4)" stroke="#fb7185" stroke-width="1.5"/>
+    <text x="90" y="26" fill="white" font-size="11" font-weight="600" text-anchor="middle">Error: Solicitar variables</text>
+    <text x="90" y="42" fill="#94a3b8" font-size="9" text-anchor="middle">de entorno</text>
+  </g>
+
+  <!-- N11: IngestMode -->
+  <g transform="translate(670, 530)">
+    <polygon points="80,0 160,50 80,100 0,50" fill="#0f172a"/>
+    <polygon points="80,0 160,50 80,100 0,50" fill="rgba(120,53,15,0.3)" stroke="#fbbf24" stroke-width="1.5"/>
+    <text x="80" y="54" fill="white" font-size="11" font-weight="600" text-anchor="middle">¿Tipo de Ingesta?</text>
+  </g>
+
+  <!-- N12: RunIngest -->
+  <g transform="translate(510, 670)">
+    <rect width="180" height="60" rx="6" fill="#0f172a"/>
+    <rect width="180" height="60" rx="6" fill="rgba(8,51,68,0.4)" stroke="#22d3ee" stroke-width="1.5"/>
+    <text x="90" y="30" fill="white" font-size="11" font-weight="600" text-anchor="middle">python ingest.py</text>
+    <text x="90" y="46" fill="#94a3b8" font-size="9" text-anchor="middle">[ruta]</text>
+  </g>
+
+  <!-- N13: RunForce -->
+  <g transform="translate(810, 670)">
+    <rect width="180" height="60" rx="6" fill="#0f172a"/>
+    <rect width="180" height="60" rx="6" fill="rgba(8,51,68,0.4)" stroke="#22d3ee" stroke-width="1.5"/>
+    <text x="90" y="30" fill="white" font-size="11" font-weight="600" text-anchor="middle">python force_ingest.py</text>
+    <text x="90" y="46" fill="#94a3b8" font-size="9" text-anchor="middle">[ruta]</text>
+  </g>
+
+  <!-- N14: LoadFiles -->
+  <g transform="translate(640, 770)">
+    <rect width="220" height="60" rx="6" fill="#0f172a"/>
+    <rect width="220" height="60" rx="6" fill="rgba(8,51,68,0.4)" stroke="#22d3ee" stroke-width="1.5"/>
+    <text x="110" y="26" fill="white" font-size="11" font-weight="600" text-anchor="middle">loaders.py: Carga</text>
+    <text x="110" y="42" fill="#94a3b8" font-size="9" text-anchor="middle">según extensión</text>
+  </g>
+
+  <!-- N15: FileBranch -->
+  <g transform="translate(670, 870)">
+    <polygon points="80,0 160,50 80,100 0,50" fill="#0f172a"/>
+    <polygon points="80,0 160,50 80,100 0,50" fill="rgba(120,53,15,0.3)" stroke="#fbbf24" stroke-width="1.5"/>
+    <text x="80" y="54" fill="white" font-size="11" font-weight="600" text-anchor="middle">Tipo de Archivo</text>
+  </g>
+
+  <!-- N16: TextExtract -->
+  <g transform="translate(460, 1010)">
+    <rect width="180" height="60" rx="6" fill="#0f172a"/>
+    <rect width="180" height="60" rx="6" fill="rgba(8,51,68,0.4)" stroke="#22d3ee" stroke-width="1.5"/>
+    <text x="90" y="34" fill="white" font-size="11" font-weight="600" text-anchor="middle">Extraer texto</text>
+  </g>
+
+  <!-- N17: PDFExtract -->
+  <g transform="translate(660, 1010)">
+    <rect width="180" height="60" rx="6" fill="#0f172a"/>
+    <rect width="180" height="60" rx="6" fill="rgba(8,51,68,0.4)" stroke="#22d3ee" stroke-width="1.5"/>
+    <text x="90" y="26" fill="white" font-size="11" font-weight="600" text-anchor="middle">Extraer texto por</text>
+    <text x="90" y="42" fill="#94a3b8" font-size="9" text-anchor="middle">página + renders</text>
+  </g>
+
+  <!-- N18: ImgExtract -->
+  <g transform="translate(860, 1010)">
+    <rect width="180" height="60" rx="6" fill="#0f172a"/>
+    <rect width="180" height="60" rx="6" fill="rgba(8,51,68,0.4)" stroke="#22d3ee" stroke-width="1.5"/>
+    <text x="90" y="34" fill="white" font-size="11" font-weight="600" text-anchor="middle">Extraer inputs RGB</text>
+  </g>
+
+  <!-- N19: ChunkCheck -->
+  <g transform="translate(540, 1100)">
+    <polygon points="110,0 220,60 110,120 0,60" fill="#0f172a"/>
+    <polygon points="110,0 220,60 110,120 0,60" fill="rgba(120,53,15,0.3)" stroke="#fbbf24" stroke-width="1.5"/>
+    <text x="110" y="56" fill="white" font-size="11" font-weight="600" text-anchor="middle">¿Excede tamaño</text>
+    <text x="110" y="72" fill="white" font-size="11" font-weight="600" text-anchor="middle">de embedding?</text>
+  </g>
+
+  <!-- N20: Chunking -->
+  <g transform="translate(340, 1250)">
+    <rect width="220" height="60" rx="6" fill="#0f172a"/>
+    <rect width="220" height="60" rx="6" fill="rgba(8,51,68,0.4)" stroke="#22d3ee" stroke-width="1.5"/>
+    <text x="110" y="26" fill="white" font-size="11" font-weight="600" text-anchor="middle">chunker.py:</text>
+    <text x="110" y="42" fill="#94a3b8" font-size="9" text-anchor="middle">Segmentación en chunks</text>
+  </g>
+
+  <!-- N21: GenEmbed -->
+  <g transform="translate(630, 1350)">
+    <rect width="240" height="60" rx="6" fill="#0f172a"/>
+    <rect width="240" height="60" rx="6" fill="rgba(8,51,68,0.4)" stroke="#22d3ee" stroke-width="1.5"/>
+    <text x="120" y="26" fill="white" font-size="11" font-weight="600" text-anchor="middle">embeddings.py: VoyageEmbedding</text>
+    <text x="120" y="42" fill="#94a3b8" font-size="9" text-anchor="middle">(dim: 1024, model_for_extension)</text>
+  </g>
+
+  <!-- N22: MongoPersist -->
+  <g transform="translate(630, 1450)">
+    <rect x="0" y="10" width="240" height="50" fill="#0f172a"/>
+    <ellipse cx="120" cy="10" rx="120" ry="12" fill="#0f172a"/>
+    <ellipse cx="120" cy="60" rx="120" ry="12" fill="#0f172a"/>
+    <rect x="0" y="10" width="240" height="50" fill="rgba(76,29,149,0.4)"/>
+    <ellipse cx="120" cy="10" rx="120" ry="12" fill="rgba(76,29,149,0.4)" stroke="#a78bfa" stroke-width="1.5"/>
+    <ellipse cx="120" cy="60" rx="120" ry="12" fill="rgba(76,29,149,0.4)" stroke="#a78bfa" stroke-width="1.5"/>
+    <line x1="0" y1="10" x2="0" y2="60" stroke="#a78bfa" stroke-width="1.5"/>
+    <line x1="240" y1="10" x2="240" y2="60" stroke="#a78bfa" stroke-width="1.5"/>
+    <text x="120" y="40" fill="white" font-size="11" font-weight="600" text-anchor="middle">mongodb.py: Persistir chunks</text>
+    <text x="120" y="55" fill="#94a3b8" font-size="9" text-anchor="middle">y embeddings en Atlas</text>
+  </g>
+
+  <!-- N23: WebhookCheck -->
+  <g transform="translate(640, 1540)">
+    <polygon points="110,0 220,60 110,120 0,60" fill="#0f172a"/>
+    <polygon points="110,0 220,60 110,120 0,60" fill="rgba(120,53,15,0.3)" stroke="#fbbf24" stroke-width="1.5"/>
+    <text x="110" y="56" fill="white" font-size="11" font-weight="600" text-anchor="middle">¿GOOGLE_CHAT_WEBHOOK_URL</text>
+    <text x="110" y="72" fill="white" font-size="11" font-weight="600" text-anchor="middle">configurado?</text>
+  </g>
+
+  <!-- N24: SendWebhook -->
+  <g transform="translate(450, 1690)">
+    <rect width="200" height="60" rx="6" fill="#0f172a"/>
+    <rect width="200" height="60" rx="6" fill="rgba(8,51,68,0.4)" stroke="#22d3ee" stroke-width="1.5"/>
+    <text x="100" y="26" fill="white" font-size="11" font-weight="600" text-anchor="middle">Enviar notificación</text>
+    <text x="100" y="42" fill="#94a3b8" font-size="9" text-anchor="middle">a Google Chat</text>
+  </g>
+
+  <!-- N25: IngestDone -->
+  <g transform="translate(670, 1815)">
+    <rect width="160" height="50" rx="25" fill="#0f172a"/>
+    <rect width="160" height="50" rx="25" fill="rgba(59,130,246,0.3)" stroke="#60a5fa" stroke-width="1.5"/>
+    <text x="80" y="29" fill="white" font-size="12" font-weight="600" text-anchor="middle">Ingesta Completada</text>
+  </g>
+
+  <!-- N26: StartMCP -->
+  <g transform="translate(1190, 390)">
+    <rect width="220" height="60" rx="6" fill="#0f172a"/>
+    <rect width="220" height="60" rx="6" fill="rgba(8,51,68,0.4)" stroke="#22d3ee" stroke-width="1.5"/>
+    <text x="110" y="26" fill="white" font-size="11" font-weight="600" text-anchor="middle">Iniciar / Conectar a</text>
+    <text x="110" y="42" fill="#94a3b8" font-size="9" text-anchor="middle">MCP Server: mcp-server.js</text>
+  </g>
+
+  <!-- N27: AgentToolCall -->
+  <g transform="translate(1200, 480)">
+    <polygon points="100,0 200,60 100,120 0,60" fill="#0f172a"/>
+    <polygon points="100,0 200,60 100,120 0,60" fill="rgba(120,53,15,0.3)" stroke="#fbbf24" stroke-width="1.5"/>
+    <text x="100" y="56" fill="white" font-size="11" font-weight="600" text-anchor="middle">🤖 Agente IA:</text>
+    <text x="100" y="72" fill="white" font-size="11" font-weight="600" text-anchor="middle">Selecciona Herramienta</text>
+  </g>
+
+  <!-- N28: GenQueryEmbed -->
+  <g transform="translate(1180, 650)">
+    <rect width="240" height="60" rx="6" fill="#0f172a"/>
+    <rect width="240" height="60" rx="6" fill="rgba(8,51,68,0.4)" stroke="#22d3ee" stroke-width="1.5"/>
+    <text x="120" y="26" fill="white" font-size="11" font-weight="600" text-anchor="middle">embeddings.py / query:</text>
+    <text x="120" y="42" fill="#94a3b8" font-size="9" text-anchor="middle">Generar vector embed_query()</text>
+  </g>
+
+  <!-- N29: ExecFind -->
+  <g transform="translate(1410, 650)">
+    <rect x="0" y="10" width="220" height="50" fill="#0f172a"/>
+    <ellipse cx="110" cy="10" rx="110" ry="12" fill="#0f172a"/>
+    <ellipse cx="110" cy="60" rx="110" ry="12" fill="#0f172a"/>
+    <rect x="0" y="10" width="220" height="50" fill="rgba(76,29,149,0.4)"/>
+    <ellipse cx="110" cy="10" rx="110" ry="12" fill="rgba(76,29,149,0.4)" stroke="#a78bfa" stroke-width="1.5"/>
+    <ellipse cx="110" cy="60" rx="110" ry="12" fill="rgba(76,29,149,0.4)" stroke="#a78bfa" stroke-width="1.5"/>
+    <line x1="0" y1="10" x2="0" y2="60" stroke="#a78bfa" stroke-width="1.5"/>
+    <line x1="220" y1="10" x2="220" y2="60" stroke="#a78bfa" stroke-width="1.5"/>
+    <text x="110" y="40" fill="white" font-size="11" font-weight="600" text-anchor="middle">Ejecutar query find()</text>
+    <text x="110" y="55" fill="#94a3b8" font-size="9" text-anchor="middle">({ documentId })</text>
+  </g>
+
+  <!-- N30: ExecVectorSearch -->
+  <g transform="translate(1190, 750)">
+    <rect x="0" y="10" width="220" height="50" fill="#0f172a"/>
+    <ellipse cx="110" cy="10" rx="110" ry="12" fill="#0f172a"/>
+    <ellipse cx="110" cy="60" rx="110" ry="12" fill="#0f172a"/>
+    <rect x="0" y="10" width="220" height="50" fill="rgba(76,29,149,0.4)"/>
+    <ellipse cx="110" cy="10" rx="110" ry="12" fill="rgba(76,29,149,0.4)" stroke="#a78bfa" stroke-width="1.5"/>
+    <ellipse cx="110" cy="60" rx="110" ry="12" fill="rgba(76,29,149,0.4)" stroke="#a78bfa" stroke-width="1.5"/>
+    <line x1="0" y1="10" x2="0" y2="60" stroke="#a78bfa" stroke-width="1.5"/>
+    <line x1="220" y1="10" x2="220" y2="60" stroke="#a78bfa" stroke-width="1.5"/>
+    <text x="110" y="40" fill="white" font-size="11" font-weight="600" text-anchor="middle">Ejecutar $vectorSearch</text>
+    <text x="110" y="55" fill="#94a3b8" font-size="9" text-anchor="middle">en MongoDB Atlas</text>
+  </g>
+
+  <!-- N31: ProjectResults -->
+  <g transform="translate(1180, 850)">
+    <rect width="240" height="60" rx="6" fill="#0f172a"/>
+    <rect width="240" height="60" rx="6" fill="rgba(8,51,68,0.4)" stroke="#22d3ee" stroke-width="1.5"/>
+    <text x="120" y="26" fill="white" font-size="11" font-weight="600" text-anchor="middle">Proyectar score, documentId,</text>
+    <text x="120" y="42" fill="#94a3b8" font-size="9" text-anchor="middle">text, page, chunkIndex...</text>
+  </g>
+
+  <!-- N32: ResultCheck -->
+  <g transform="translate(1190, 940)">
+    <polygon points="110,0 220,60 110,120 0,60" fill="#0f172a"/>
+    <polygon points="110,0 220,60 110,120 0,60" fill="rgba(120,53,15,0.3)" stroke="#fbbf24" stroke-width="1.5"/>
+    <text x="110" y="56" fill="white" font-size="11" font-weight="600" text-anchor="middle">¿Resultados</text>
+    <text x="110" y="72" fill="white" font-size="11" font-weight="600" text-anchor="middle">encontrados?</text>
+  </g>
+
+  <!-- N33: AgentRAG -->
+  <g transform="translate(1180, 1110)">
+    <rect width="240" height="60" rx="6" fill="#0f172a"/>
+    <rect width="240" height="60" rx="6" fill="rgba(6,78,59,0.4)" stroke="#34d399" stroke-width="1.5"/>
+    <text x="120" y="26" fill="white" font-size="11" font-weight="600" text-anchor="middle">🤖 Agente IA: Sintetiza contexto</text>
+    <text x="120" y="42" fill="#94a3b8" font-size="9" text-anchor="middle">y responde al Usuario (RAG)</text>
+  </g>
+
+  <!-- N34: DiagRetrieval -->
+  <g transform="translate(920, 1110)">
+    <rect width="240" height="60" rx="6" fill="#0f172a"/>
+    <rect width="240" height="60" rx="6" fill="rgba(136,19,55,0.4)" stroke="#fb7185" stroke-width="1.5"/>
+    <text x="120" y="26" fill="white" font-size="11" font-weight="600" text-anchor="middle">Diagnóstico: Dimensiones del vector,</text>
+    <text x="120" y="42" fill="#94a3b8" font-size="9" text-anchor="middle">numCandidates o modelo...</text>
+  </g>
+
+  <!-- N35: ResponseDone -->
+  <g transform="translate(1210, 1235)">
+    <rect width="180" height="50" rx="25" fill="#0f172a"/>
+    <rect width="180" height="50" rx="25" fill="rgba(59,130,246,0.3)" stroke="#60a5fa" stroke-width="1.5"/>
+    <text x="90" y="29" fill="white" font-size="12" font-weight="600" text-anchor="middle">Respuesta Entregada</text>
+  </g>
+
+  <!-- N36: AgentDocResponse -->
+  <g transform="translate(1410, 750)">
+    <rect width="220" height="60" rx="6" fill="#0f172a"/>
+    <rect width="220" height="60" rx="6" fill="rgba(6,78,59,0.4)" stroke="#34d399" stroke-width="1.5"/>
+    <text x="110" y="26" fill="white" font-size="11" font-weight="600" text-anchor="middle">🤖 Agente IA: Muestra</text>
+    <text x="110" y="42" fill="#94a3b8" font-size="9" text-anchor="middle">documento exacto</text>
+  </g>
+
+  <!-- Subgraph Nodes -->
+  <!-- N37: ErrorTriage -->
+  <g transform="translate(1175, 1400)">
+    <polygon points="100,0 200,50 100,100 0,50" fill="#0f172a"/>
+    <polygon points="100,0 200,50 100,100 0,50" fill="rgba(120,53,15,0.3)" stroke="#fbbf24" stroke-width="1.5"/>
+    <text x="100" y="54" fill="white" font-size="11" font-weight="600" text-anchor="middle">Identificar tipo de fallo</text>
+  </g>
+
+  <!-- E1 -->
+  <g transform="translate(1040, 1540)">
+    <rect width="220" height="60" rx="6" fill="#0f172a"/>
+    <rect width="220" height="60" rx="6" fill="rgba(136,19,55,0.4)" stroke="#fb7185" stroke-width="1.5"/>
+    <text x="110" y="26" fill="white" font-size="11" font-weight="600" text-anchor="middle">Módulos / Dependencias</text>
+    <text x="110" y="42" fill="#94a3b8" font-size="9" text-anchor="middle">Verificar package.json &amp; install</text>
+  </g>
+
+  <!-- E2 -->
+  <g transform="translate(1280, 1540)">
+    <rect width="240" height="60" rx="6" fill="#0f172a"/>
+    <rect width="240" height="60" rx="6" fill="rgba(136,19,55,0.4)" stroke="#fb7185" stroke-width="1.5"/>
+    <text x="120" y="26" fill="white" font-size="11" font-weight="600" text-anchor="middle">Credenciales / .env</text>
+    <text x="120" y="42" fill="#94a3b8" font-size="9" text-anchor="middle">Verificar MONGODB_URI y API_KEY</text>
+  </g>
+
+  <!-- E3 -->
+  <g transform="translate(1040, 1630)">
+    <rect width="220" height="60" rx="6" fill="#0f172a"/>
+    <rect width="220" height="60" rx="6" fill="rgba(136,19,55,0.4)" stroke="#fb7185" stroke-width="1.5"/>
+    <text x="110" y="26" fill="white" font-size="11" font-weight="600" text-anchor="middle">Atlas Vector Index</text>
+    <text x="110" y="42" fill="#94a3b8" font-size="9" text-anchor="middle">Verificar dimensiones y métrica</text>
+  </g>
+
+  <!-- E4 -->
+  <g transform="translate(1280, 1630)">
+    <rect width="240" height="60" rx="6" fill="#0f172a"/>
+    <rect width="240" height="60" rx="6" fill="rgba(136,19,55,0.4)" stroke="#fb7185" stroke-width="1.5"/>
+    <text x="120" y="26" fill="white" font-size="11" font-weight="600" text-anchor="middle">Conexión / Red</text>
+    <text x="120" y="42" fill="#94a3b8" font-size="9" text-anchor="middle">Revisar logs y conectividad</text>
+  </g>
+
+  <!-- Arrow Labels Layer -->
+  <g id="labels">
+    <text x="590" y="270" fill="#34d399" font-size="9" font-weight="600" text-anchor="middle">A. Validación Estática</text>
+    <text x="760" y="360" fill="#34d399" font-size="9" font-weight="600" text-anchor="start">B. Ingesta de Conocimiento</text>
+    <text x="910" y="270" fill="#34d399" font-size="9" font-weight="600" text-anchor="middle">C. Búsqueda Semántica / RAG</text>
+
+    <text x="310" y="620" fill="#34d399" font-size="9" font-weight="600">Sí</text>
+    <text x="250" y="530" fill="#fb7185" font-size="9" font-weight="600">No</text>
+    
+    <text x="760" y="520" fill="#34d399" font-size="9" font-weight="600">Sí</text>
+    <text x="860" y="430" fill="#fb7185" font-size="9" font-weight="600">No</text>
+
+    <text x="660" y="570" fill="#94a3b8" font-size="9" font-weight="600" text-anchor="end">Normal (checksum)</text>
+    <text x="840" y="570" fill="#94a3b8" font-size="9" font-weight="600" text-anchor="start">Forzada (sobrescribir)</text>
+
+    <text x="610" y="910" fill="#94a3b8" font-size="9" font-weight="600" text-anchor="end">.md, .txt, .csv...</text>
+    <text x="760" y="990" fill="#94a3b8" font-size="9" font-weight="600" text-anchor="start">.pdf</text>
+    <text x="890" y="910" fill="#94a3b8" font-size="9" font-weight="600" text-anchor="start">.jpg, .jpeg, .png</text>
+
+    <text x="590" y="1150" fill="#34d399" font-size="9" font-weight="600" text-anchor="end">Sí</text>
+    <text x="660" y="1280" fill="#fb7185" font-size="9" font-weight="600" text-anchor="start">No</text>
+
+    <text x="690" y="1590" fill="#34d399" font-size="9" font-weight="600" text-anchor="end">Sí</text>
+    <text x="760" y="1680" fill="#fb7185" font-size="9" font-weight="600" text-anchor="start">No</text>
+
+    <text x="1310" y="630" fill="#94a3b8" font-size="9" font-weight="600" text-anchor="start">mongodb_vector_search</text>
+    <text x="1420" y="530" fill="#94a3b8" font-size="9" font-weight="600" text-anchor="middle">find_by_document_id</text>
+
+    <text x="1310" y="1080" fill="#34d399" font-size="9" font-weight="600" text-anchor="start">Sí</text>
+    <text x="1140" y="990" fill="#fb7185" font-size="9" font-weight="600" text-anchor="middle">No / Vacío</text>
+  </g>
+</svg>
