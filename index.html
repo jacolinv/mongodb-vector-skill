@@ -4,22 +4,24 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MongoDB Vector Search Skill</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.5.0/github-markdown.min.css">
     <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; color: #333; max-width: 800px; margin: 0 auto; padding: 2rem; background-color: #0f172a; color: #e2e8f0; }
-        h1, h2, h3 { color: #f8fafc; border-bottom: 1px solid #1e293b; padding-bottom: 0.3em; }
-        pre { background-color: #1e293b; padding: 16px; border-radius: 6px; overflow: auto; }
-        code { font-family: ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, Liberation Mono, monospace; background-color: rgba(255,255,255,0.1); padding: 0.2em 0.4em; border-radius: 6px; }
-        pre code { background-color: transparent; padding: 0; }
-        table { border-collapse: collapse; width: 100%; margin-bottom: 16px; }
-        th, td { border: 1px solid #334155; padding: 6px 13px; }
-        th { background-color: #1e293b; font-weight: 600; }
-        img { max-width: 100%; box-sizing: content-box; background-color: transparent; }
-        a { color: #38bdf8; text-decoration: none; }
-        a:hover { text-decoration: underline; }
-        blockquote { border-left: 4px solid #3b82f6; padding: 0 1em; color: #94a3b8; margin: 0; }
+        body {
+            box-sizing: border-box;
+            min-width: 200px;
+            max-width: 980px;
+            margin: 0 auto;
+            padding: 45px;
+            background-color: #0d1117; /* GitHub Dark background */
+        }
+        @media (max-width: 767px) {
+            body {
+                padding: 15px;
+            }
+        }
     </style>
 </head>
-<body>
+<body class="markdown-body" data-color-mode="dark" data-dark-theme="dark">
 <h1>MongoDB Vector Search Skill v1.6.0</h1>
 <p>Una skill para preparar conocimiento multimodal, generar embeddings con Voyage AI, almacenarlos en MongoDB Atlas y recuperarlos con búsqueda vectorial mediante un servidor MCP local.</p>
 <h2>Propósito</h2>
@@ -338,175 +340,13 @@ print(len(query_vector))
 <li>Inicia el MCP server y prueba <code>mongodb_vector_search</code> con un embedding de consulta real.</li>
 </ol>
 
-<div id="zoom-modal" class="zoom-modal">
-    <span class="zoom-close" onclick="closeZoom()">&times;</span>
-    <img id="zoom-img" class="zoom-content">
-</div>
 
-<style>
-    /* Styling for the modal */
-    .zoom-modal {
-        display: none;
-        position: fixed;
-        z-index: 1000;
-        left: 0;
-        top: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(15, 23, 42, 0.95);
-        overflow: hidden;
-    }
-    .zoom-close {
-        position: absolute;
-        top: 15px;
-        right: 35px;
-        color: #f1f1f1;
-        font-size: 40px;
-        font-weight: bold;
-        transition: 0.3s;
-        cursor: pointer;
-        z-index: 1001;
-    }
-    .zoom-close:hover,
-    .zoom-close:focus {
-        color: #38bdf8;
-        text-decoration: none;
-        cursor: pointer;
-    }
-    .zoom-content {
-        position: absolute;
-        transform-origin: 0 0;
-        cursor: grab;
-        max-width: none;
-        background-color: transparent;
-    }
-    .zoom-content:active {
-        cursor: grabbing;
-    }
-    /* Add pointer to original images */
-    img {
-        cursor: zoom-in;
-        transition: transform 0.2s ease;
-    }
-    img:hover {
-        transform: scale(1.02);
-    }
-</style>
 
 <script>
-    const modal = document.getElementById("zoom-modal");
-    const zoomImg = document.getElementById("zoom-img");
-    const images = document.querySelectorAll("img:not(.zoom-content)");
-    
-    let scale = 1;
-    let panning = false;
-    let pointX = 0;
-    let pointY = 0;
-    let startX = 0;
-    let startY = 0;
-
-    images.forEach(img => {
-        img.onclick = function() {
-            modal.style.display = "block";
-            zoomImg.src = this.src;
-            document.body.style.overflow = "hidden"; // Prevent background scroll
-            
-            // Wait for image to load to get dimensions if not cached
-            zoomImg.onload = initImageTransform;
-            if(zoomImg.complete) initImageTransform();
-        }
-    });
-
-    function initImageTransform() {
-        scale = 1;
-        
-        const imgWidth = zoomImg.naturalWidth || zoomImg.width || 800;
-        const imgHeight = zoomImg.naturalHeight || zoomImg.height || 600;
-        
-        const winWidth = window.innerWidth;
-        const winHeight = window.innerHeight;
-        
-        const scaleX = winWidth / imgWidth;
-        const scaleY = winHeight / imgHeight;
-        let initialScale = Math.min(scaleX, scaleY) * 0.85; // 85% of screen
-        
-        // Prevent huge upscale for small SVGs initially
-        if (initialScale > 2) initialScale = 2; 
-        
-        scale = initialScale;
-        
-        pointX = (winWidth - (imgWidth * scale)) / 2;
-        pointY = (winHeight - (imgHeight * scale)) / 2;
-        
-        setTransform();
-    }
-
-    function closeZoom() {
-        modal.style.display = "none";
-        document.body.style.overflow = "auto";
-    }
-
-    modal.onclick = function(e) {
-        if (e.target === modal) {
-            closeZoom();
-        }
-    }
-
-    function setTransform() {
-        zoomImg.style.transform = `translate(${pointX}px, ${pointY}px) scale(${scale})`;
-    }
-
-    modal.onmousedown = function (e) {
-        e.preventDefault();
-        startX = e.clientX - pointX;
-        startY = e.clientY - pointY;
-        panning = true;
-    }
-
-    modal.onmouseup = function (e) {
-        panning = false;
-    }
-
-    modal.onmouseleave = function (e) {
-        panning = false;
-    }
-
-    modal.onmousemove = function (e) {
-        e.preventDefault();
-        if (!panning) return;
-        pointX = e.clientX - startX;
-        pointY = e.clientY - startY;
-        setTransform();
-    }
-
-    modal.onwheel = function (e) {
-        e.preventDefault();
-        const xs = (e.clientX - pointX) / scale;
-        const ys = (e.clientY - pointY) / scale;
-        
-        // Handle trackpad pinch and mouse wheel
-        let delta = e.deltaY;
-        let zoomFactor = 1.1;
-        
-        if (e.ctrlKey) {
-            // Trackpad pinch-to-zoom
-            zoomFactor = 1 + (Math.abs(delta) * 0.01);
-            if (delta > 0) scale /= zoomFactor;
-            else scale *= zoomFactor;
-        } else {
-            // Mouse wheel
-            if (delta > 0) scale /= zoomFactor;
-            else scale *= zoomFactor;
-        }
-        
-        if (scale < 0.1) scale = 0.1;
-        if (scale > 20) scale = 20;
-        
-        pointX = e.clientX - xs * scale;
-        pointY = e.clientY - ys * scale;
-        setTransform();
-    }
+document.querySelectorAll(".markdown-body img").forEach(img => {
+    img.style.cursor = "zoom-in";
+    img.onclick = () => window.open(img.src, "_blank");
+});
 </script>
 </body>
-
 </html>
