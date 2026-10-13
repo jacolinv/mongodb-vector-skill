@@ -1,32 +1,181 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MongoDB Vector Search Skill</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.5.0/github-markdown.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        body {
-            box-sizing: border-box;
-            min-width: 200px;
-            max-width: 980px;
-            margin: 0 auto;
-            padding: 45px;
-            background-color: #0d1117; /* GitHub Dark background */
+        :root {
+            --bg-color: #0b0f19;
+            --surface-color: #151b2b;
+            --primary: #00ED64;
+            --secondary: #00684A;
+            --accent: #38bdf8;
+            --text-main: #c9d1d9;
+            --text-muted: #8b949e;
+            --border: #30363d;
         }
-        @media (max-width: 767px) {
-            body {
-                padding: 15px;
-            }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            background-image: 
+                radial-gradient(at 0% 0%, hsla(153, 100%, 46%, 0.08) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, hsla(199, 95%, 74%, 0.05) 0px, transparent 50%);
+            background-attachment: fixed;
+            color: var(--text-main);
+            font-family: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+            overflow-x: hidden;
+        }
+
+        ::-webkit-scrollbar { width: 10px; height: 10px; }
+        ::-webkit-scrollbar-track { background: var(--bg-color); }
+        ::-webkit-scrollbar-thumb { background: #2a3143; border-radius: 5px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--border); }
+
+        .layout { display: flex; max-width: 1400px; margin: 0 auto; position: relative; }
+
+        .sidebar {
+            width: 280px;
+            flex-shrink: 0;
+            padding: 40px 20px;
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            overflow-y: auto;
+            box-sizing: border-box;
+            border-right: 1px solid rgba(255,255,255,0.05);
+        }
+
+        @media (max-width: 1024px) { .sidebar { display: none; } }
+
+        .toc-title {
+            font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em;
+            color: var(--text-muted); font-weight: 700; margin-bottom: 20px;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .toc-list { list-style: none; padding: 0; margin: 0; }
+        .toc-list li { margin-bottom: 10px; }
+        .toc-list a {
+            color: var(--text-muted); text-decoration: none; font-size: 0.9rem;
+            display: block; padding: 6px 12px; border-radius: 6px;
+            transition: all 0.2s ease; border-left: 2px solid transparent;
+        }
+        .toc-list a:hover { color: var(--text-main); background: rgba(255,255,255,0.03); border-left-color: var(--accent); }
+        .toc-list .active { color: var(--primary); background: rgba(0, 237, 100, 0.05); border-left-color: var(--primary); font-weight: 500; }
+        .toc-h3 { padding-left: 25px !important; font-size: 0.85rem !important; }
+
+        .main-content { flex-grow: 1; min-width: 0; padding: 60px 40px 100px 60px; }
+        @media (max-width: 768px) { .main-content { padding: 30px 20px; } }
+
+        .markdown-body { background: transparent !important; font-family: inherit; color: var(--text-main); }
+        
+        .markdown-body h1 {
+            border-bottom: none; font-size: 2.8em; font-weight: 800;
+            background: linear-gradient(to right, #00ED64, #38bdf8);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            margin-bottom: 30px; letter-spacing: -0.02em;
+        }
+        .markdown-body h2 { border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px; margin-top: 50px; color: #fff; font-weight: 600; scroll-margin-top: 80px; }
+        .markdown-body h3 { color: #e2e8f0; margin-top: 35px; scroll-margin-top: 80px; }
+
+        .markdown-body pre {
+            background-color: var(--surface-color); border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 12px; box-shadow: 0 10px 30px -10px rgba(0,0,0,0.5); padding: 20px;
+        }
+        .markdown-body pre code { font-family: "JetBrains Mono", monospace; font-size: 0.9em; }
+        .markdown-body code { background-color: rgba(255,255,255,0.08); color: #38bdf8; border-radius: 4px; }
+
+        .markdown-body img {
+            border-radius: 12px; box-shadow: 0 15px 35px -10px rgba(0,0,0,0.6);
+            border: 1px solid rgba(255,255,255,0.05);
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.3s ease;
+            background: #0f141e; padding: 10px; width: 100%; height: auto; display: block; margin: 0 auto;
+        }
+        .markdown-body img:hover {
+            transform: scale(1.02) translateY(-5px);
+            box-shadow: 0 25px 45px -15px rgba(0, 237, 100, 0.2); border-color: rgba(0, 237, 100, 0.3);
+        }
+
+        .markdown-body blockquote {
+            background: rgba(56, 189, 248, 0.05); border-left: 4px solid var(--accent);
+            border-radius: 0 8px 8px 0; padding: 15px 20px; color: var(--text-main);
+        }
+
+        .fade-in-up { opacity: 0; transform: translateY(20px); transition: opacity 0.6s ease-out, transform 0.6s ease-out; }
+        .fade-in-up.visible { opacity: 1; transform: translateY(0); }
+
+        #btt {
+            position: fixed; bottom: 30px; right: 30px; width: 50px; height: 50px; border-radius: 50%;
+            background: var(--surface-color); color: var(--primary); border: 1px solid rgba(0, 237, 100, 0.3);
+            display: flex; align-items: center; justify-content: center; font-size: 20px; cursor: pointer;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3); opacity: 0; visibility: hidden; transition: all 0.3s ease; z-index: 99;
+        }
+        #btt.show { opacity: 1; visibility: visible; }
+        #btt:hover { background: var(--primary); color: #000; transform: translateY(-3px); box-shadow: 0 15px 25px rgba(0, 237, 100, 0.4); }
+        
+        .version-badge {
+            display: inline-block; background: rgba(0, 237, 100, 0.1); color: var(--primary);
+            padding: 4px 10px; border-radius: 20px; font-size: 0.8rem; font-weight: 600;
+            vertical-align: middle; margin-left: 15px; border: 1px solid rgba(0, 237, 100, 0.2); letter-spacing: normal;
         }
     </style>
+
 </head>
-<body class="markdown-body" data-color-mode="dark" data-dark-theme="dark">
-<h1>MongoDB Vector Search Skill v1.6.0</h1>
-<p>Una skill para preparar conocimiento multimodal, generar embeddings con Voyage AI, almacenarlos en MongoDB Atlas y recuperarlos con búsqueda vectorial mediante un servidor MCP local.</p>
-<h2>Propósito</h2>
-<p>Este proyecto permite:</p>
-<ul>
+<body data-color-mode="dark" data-dark-theme="dark">
+
+<div class="layout">
+    <aside class="sidebar">
+        <div class="toc-title"><i class="fas fa-list-ul"></i> Contenido</div>
+        <ul class="toc-list">
+  <li><a href="#section-0" class="toc-h2">Propósito</a></li>
+  <li><a href="#section-1" class="toc-h2">¿Cuándo usar esta skill?</a></li>
+  <li><a href="#section-2" class="toc-h2">Requisitos</a></li>
+  <li><a href="#section-3" class="toc-h2">Instalación</a></li>
+  <li><a href="#section-4" class="toc-h2">Variables de entorno relevantes</a></li>
+  <li><a href="#section-5" class="toc-h2">Flujo de trabajo y Arquitectura (Architecture & Workflow)</a></li>
+  <li><a href="#section-6" class="toc-h3">Diagrama de Arquitectura de la Skill</a></li>
+  <li><a href="#section-7" class="toc-h3">Diagrama de Flujo de Todos los Caminos Posibles (Decision Flowchart)</a></li>
+  <li><a href="#section-8" class="toc-h3">1. Preparar los documentos</a></li>
+  <li><a href="#section-9" class="toc-h3">2. Dividir contenido en chunks</a></li>
+  <li><a href="#section-10" class="toc-h3">3. Generar embeddings</a></li>
+  <li><a href="#section-11" class="toc-h3">4. Persistir en MongoDB Atlas</a></li>
+  <li><a href="#section-12" class="toc-h3">5. Ejecutar búsqueda vectorial</a></li>
+  <li><a href="#section-13" class="toc-h2">Ingesta de documentos</a></li>
+  <li><a href="#section-14" class="toc-h2">Ejemplo de uso de embeddings</a></li>
+  <li><a href="#section-15" class="toc-h2">Requerimientos y Definición del Índice Vectorial en Atlas</a></li>
+  <li><a href="#section-16" class="toc-h3">Definición JSON del Índice Vectorial (Atlas Vector Search Index)</a></li>
+  <li><a href="#section-17" class="toc-h2">Esquema del Documento en MongoDB (Schema & Metadata Spec)</a></li>
+  <li><a href="#section-18" class="toc-h3">Ejemplo de Documento en MongoDB:</a></li>
+  <li><a href="#section-19" class="toc-h2">Configuración del Cliente MCP (Agent Client Integration)</a></li>
+  <li><a href="#section-20" class="toc-h2">Estructura de archivos</a></li>
+  <li><a href="#section-21" class="toc-h3">Descripción por archivo</a></li>
+  <li><a href="#section-22" class="toc-h2">Validación</a></li>
+  <li><a href="#section-23" class="toc-h2">Solución de problemas</a></li>
+  <li><a href="#section-24" class="toc-h3">Error de conexión a MongoDB</a></li>
+  <li><a href="#section-25" class="toc-h3">Error por falta de variables de entorno</a></li>
+  <li><a href="#section-26" class="toc-h3">Resultados vacíos o pobres</a></li>
+  <li><a href="#section-27" class="toc-h3">Errores de modelo multimodal</a></li>
+  <li><a href="#section-28" class="toc-h2">Resumen</a></li>
+  <li><a href="#section-29" class="toc-h2">Referencias internas</a></li>
+  <li><a href="#section-30" class="toc-h2">Siguiente paso recomendado</a></li>
+</ul>
+    </aside>
+
+    <main class="main-content">
+        <div class="markdown-body">
+            <h1>MongoDB Vector Search Skill<span class="version-badge">v1.6.0</span></h1>
+<p class="fade-in-up">Una skill para preparar conocimiento multimodal, generar embeddings con Voyage AI, almacenarlos en MongoDB Atlas y recuperarlos con búsqueda vectorial mediante un servidor MCP local.</p>
+<h2 class="fade-in-up" id="section-0">Propósito</h2>
+<p class="fade-in-up">Este proyecto permite:</p>
+<ul class="fade-in-up">
 <li>Ingestar documentos en formato Markdown, Texto (txt, csv, xml, json, js), Office (docx, xlsx), PDF e imágenes.</li>
 <li>Dividir el contenido en chunks para mejorar la recuperación semántica.</li>
 <li>Generar embeddings con Voyage AI.</li>
@@ -34,52 +183,52 @@
 <li>Notificar automáticamente a Google Chat (Webhook) las subidas y los reemplazos de documentos.</li>
 <li>Ejecutar una búsqueda vectorial a través del tool <code>mongodb_vector_search</code> expuesto por <code>mcp-server.js</code>.</li>
 </ul>
-<p>La idea principal es soportar un flujo de Retrieval-Augmented Generation (RAG) o búsqueda semántica sobre documentos locales.</p>
-<h2>¿Cuándo usar esta skill?</h2>
-<p>Es útil cuando necesitas:</p>
-<ul>
+<p class="fade-in-up">La idea principal es soportar un flujo de Retrieval-Augmented Generation (RAG) o búsqueda semántica sobre documentos locales.</p>
+<h2 class="fade-in-up" id="section-1">¿Cuándo usar esta skill?</h2>
+<p class="fade-in-up">Es útil cuando necesitas:</p>
+<ul class="fade-in-up">
 <li>Construir una búsqueda semántica sobre documentación técnica o conocimiento interno.</li>
 <li>Ingestar fuentes de tipo <code>.md</code>, <code>.txt</code>, <code>.csv</code>, <code>.xml</code>, <code>.json</code>, <code>.js</code>, <code>.docx</code>, <code>.xlsx</code>, <code>.pdf</code>, <code>.jpg</code>, <code>.jpeg</code> o <code>.png</code>.</li>
 <li>Generar embeddings para documentos y consultas con el mismo modelo y dimensiones compatibles.</li>
 <li>Validar una configuración de Atlas Vector Search, embeddings o MCP server.</li>
 </ul>
-<h2>Requisitos</h2>
-<p>Antes de usar la skill debes tener:</p>
-<ul>
+<h2 class="fade-in-up" id="section-2">Requisitos</h2>
+<p class="fade-in-up">Antes de usar la skill debes tener:</p>
+<ul class="fade-in-up">
 <li>Node.js y npm instalados.</li>
 <li>Python 3 disponible en el entorno activo.</li>
 <li>Una instancia de MongoDB Atlas con soporte a Atlas Vector Search.</li>
 <li>Una API key válida de Voyage AI.</li>
 <li>Un archivo <code>.env</code> con las variables necesarias.</li>
 </ul>
-<h2>Instalación</h2>
+<h2 class="fade-in-up" id="section-3">Instalación</h2>
 <ol>
 <li>Instala dependencias de Node:</li>
 </ol>
-<pre><code class="language-bash">npm install
+<pre class="fade-in-up"><code class="language-bash">npm install
 </code></pre>
 <ol>
 <li>Instala dependencias de Python requeridas por la ingesta y los embeddings:</li>
 </ol>
-<pre><code class="language-bash">python3 -m pip install pymupdf pillow voyageai python-dotenv python-docx openpyxl
+<pre class="fade-in-up"><code class="language-bash">python3 -m pip install pymupdf pillow voyageai python-dotenv python-docx openpyxl
 </code></pre>
 <ol>
 <li>Crea un archivo <code>.env</code> en la raíz del proyecto con variables como estas:</li>
 </ol>
-<pre><code class="language-env">MONGODB_URI=&quot;mongodb+srv://&lt;usuario&gt;:&lt;password&gt;@&lt;cluster&gt;/test?retryWrites=true&amp;w=majority&quot;
-MONGODB_DB=&quot;knowledgeVectors&quot;
-MONGODB_COLLECTION=&quot;knowledge&quot;
-VECTOR_INDEX_NAME=&quot;vector_index&quot;
-VOYAGE_API_KEY=&quot;&lt;tu_api_key&gt;&quot;
-DOCUMENTS_PATH=&quot;/ruta/a/documentos&quot;
-GOOGLE_CHAT_WEBHOOK_URL=&quot;https://chat.googleapis.com/...&quot;
+<pre class="fade-in-up"><code class="language-env">MONGODB_URI="mongodb+srv://&lt;usuario&gt;:&lt;password&gt;@&lt;cluster&gt;/test?retryWrites=true&amp;w=majority"
+MONGODB_DB="knowledgeVectors"
+MONGODB_COLLECTION="knowledge"
+VECTOR_INDEX_NAME="vector_index"
+VOYAGE_API_KEY="&lt;tu_api_key&gt;"
+DOCUMENTS_PATH="/ruta/a/documentos"
+GOOGLE_CHAT_WEBHOOK_URL="https://chat.googleapis.com/..."
 </code></pre>
-<blockquote>
+<blockquote class="fade-in-up">
 <p>El archivo <code>.env</code> no debe subirse al repositorio si incluye secretos reales.</p>
 </blockquote>
-<h2>Variables de entorno relevantes</h2>
-<p>Estas son las variables que usa el proyecto:</p>
-<ul>
+<h2 class="fade-in-up" id="section-4">Variables de entorno relevantes</h2>
+<p class="fade-in-up">Estas son las variables que usa el proyecto:</p>
+<ul class="fade-in-up">
 <li><code>MONGODB_URI</code>: cadena de conexión a MongoDB Atlas.</li>
 <li><code>MONGODB_DB</code>: base de datos de destino. Por defecto: <code>knowledgeVectors</code>.</li>
 <li><code>MONGODB_COLLECTION</code>: colección donde se almacenan los chunks. Por defecto: <code>knowledge</code>.</li>
@@ -91,17 +240,17 @@ GOOGLE_CHAT_WEBHOOK_URL=&quot;https://chat.googleapis.com/...&quot;
 <li><code>GOOGLE_CHAT_WEBHOOK_URL</code>: (Opcional) URL del webhook de Google Chat para enviar notificaciones de subidas y actualizaciones de documentos.</li>
 <li><code>EMBED_BATCH_SIZE</code>: tamaño del lote para embeding en batch.</li>
 </ul>
-<h2>Flujo de trabajo y Arquitectura (Architecture &amp; Workflow)</h2>
-<p>La arquitectura de esta skill se divide en dos fases principales: <strong>Ingesta de Datos</strong> (Python) y <strong>Búsqueda Vectorial/MCP</strong> (Node.js). Ambos procesos interactúan con servicios de Inteligencia Artificial (Voyage AI) y persistencia en la nube (MongoDB Atlas).</p>
-<h3>Diagrama de Arquitectura de la Skill</h3>
-<p><img alt="Diagrama de Arquitectura" src="diagrams/architecture.svg" /></p>
-<h3>Diagrama de Flujo de Todos los Caminos Posibles (Decision Flowchart)</h3>
-<p>El siguiente diagrama detalla todas las rutas de ejecución posibles coordinadas por el <strong>Agente IA / Usuario</strong>, incluyendo validación estática, ingesta multimodal, búsqueda semántica vía MCP y resolución de fallos:</p>
-<p><img alt="Diagrama de Flujo de Todos los Caminos Posibles" src="diagrams/flowchart.svg" /></p>
-<p>El flujo principal paso a paso es el siguiente:</p>
-<h3>1. Preparar los documentos</h3>
-<p>El proyecto acepta documentos con estas extensiones:</p>
-<ul>
+<h2 class="fade-in-up" id="section-5">Flujo de trabajo y Arquitectura (Architecture &amp; Workflow)</h2>
+<p class="fade-in-up">La arquitectura de esta skill se divide en dos fases principales: <strong>Ingesta de Datos</strong> (Python) y <strong>Búsqueda Vectorial/MCP</strong> (Node.js). Ambos procesos interactúan con servicios de Inteligencia Artificial (Voyage AI) y persistencia en la nube (MongoDB Atlas).</p>
+<h3 id="section-6">Diagrama de Arquitectura de la Skill</h3>
+<p class="fade-in-up"><div class="fade-in-up" style="text-align: center; margin: 30px 0;"><img alt="Diagrama de Arquitectura" src="diagrams/architecture.svg"/></div></p>
+<h3 id="section-7">Diagrama de Flujo de Todos los Caminos Posibles (Decision Flowchart)</h3>
+<p class="fade-in-up">El siguiente diagrama detalla todas las rutas de ejecución posibles coordinadas por el <strong>Agente IA / Usuario</strong>, incluyendo validación estática, ingesta multimodal, búsqueda semántica vía MCP y resolución de fallos:</p>
+<p class="fade-in-up"><div class="fade-in-up" style="text-align: center; margin: 30px 0;"><img alt="Diagrama de Flujo de Todos los Caminos Posibles" src="diagrams/flowchart.svg"/></div></p>
+<p class="fade-in-up">El flujo principal paso a paso es el siguiente:</p>
+<h3 id="section-8">1. Preparar los documentos</h3>
+<p class="fade-in-up">El proyecto acepta documentos con estas extensiones:</p>
+<ul class="fade-in-up">
 <li><code>.md</code>, <code>.txt</code>, <code>.csv</code>, <code>.xml</code>, <code>.json</code>, <code>.js</code></li>
 <li><code>.docx</code>, <code>.xlsx</code></li>
 <li><code>.pdf</code></li>
@@ -109,17 +258,17 @@ GOOGLE_CHAT_WEBHOOK_URL=&quot;https://chat.googleapis.com/...&quot;
 <li><code>.jpeg</code></li>
 <li><code>.png</code></li>
 </ul>
-<p>Los archivos se leen con <code>loaders.py</code>:</p>
-<ul>
+<p class="fade-in-up">Los archivos se leen con <code>loaders.py</code>:</p>
+<ul class="fade-in-up">
 <li>Markdown: procesa el texto, decodifica imágenes incrustadas en Base64 (<code>data:image/...</code>) y carga imágenes referenciadas localmente (<code>![alt](ruta)</code> o <code>&lt;img src="..."&gt;</code>).</li>
 <li>Texto (.txt, .csv, .xml, .json, .js) / Excel (.xlsx): se procesa como texto estructurado.</li>
 <li>DOCX: extrae los párrafos de texto y todas las imágenes embebidas en el documento.</li>
 <li>PDF: cada página se convierte a bloque multimodal (texto extraído + imagen renderizada).</li>
 <li>Imagen: se convierte a RGB y se usa como entrada multimodal con Voyage AI.</li>
 </ul>
-<h3>2. Dividir contenido en chunks</h3>
-<p><code>chunker.py</code> segmenta el texto para crear bloques manejables. El proceso genera chunks con metadata como:</p>
-<ul>
+<h3 id="section-9">2. Dividir contenido en chunks</h3>
+<p class="fade-in-up"><code>chunker.py</code> segmenta el texto para crear bloques manejables. El proceso genera chunks con metadata como:</p>
+<ul class="fade-in-up">
 <li><code>documentId</code></li>
 <li><code>checksum</code></li>
 <li><code>source.path</code></li>
@@ -131,30 +280,30 @@ GOOGLE_CHAT_WEBHOOK_URL=&quot;https://chat.googleapis.com/...&quot;
 <li><code>embedding</code></li>
 <li><code>embeddingModel</code></li>
 </ul>
-<p>La lógica de <code>ingest.py</code> evita volver a insertar archivos sin cambios usando un checksum MD5.</p>
-<h3>3. Generar embeddings</h3>
-<p><code>embeddings.py</code> encapsula la API de Voyage AI.</p>
-<p>El proyecto usa modelos configurados por extensión, y todos los documentos que compartan un mismo índice vectorial deben usar un modelo compatible con el mismo índice.</p>
-<p>Modelos por defecto:</p>
-<ul>
+<p class="fade-in-up">La lógica de <code>ingest.py</code> evita volver a insertar archivos sin cambios usando un checksum MD5.</p>
+<h3 id="section-10">3. Generar embeddings</h3>
+<p class="fade-in-up"><code>embeddings.py</code> encapsula la API de Voyage AI.</p>
+<p class="fade-in-up">El proyecto usa modelos configurados por extensión, y todos los documentos que compartan un mismo índice vectorial deben usar un modelo compatible con el mismo índice.</p>
+<p class="fade-in-up">Modelos por defecto:</p>
+<ul class="fade-in-up">
 <li>Texto: <code>voyage-4-large</code></li>
 <li>Multimodal: <code>voyage-multimodal-3.5</code></li>
 <li>Dimensión del embedding: <code>1024</code></li>
 </ul>
-<h3>4. Persistir en MongoDB Atlas</h3>
-<p><code>mongodb.py</code> gestiona:</p>
-<ul>
+<h3 id="section-11">4. Persistir en MongoDB Atlas</h3>
+<p class="fade-in-up"><code>mongodb.py</code> gestiona:</p>
+<ul class="fade-in-up">
 <li>conexión a MongoDB</li>
 <li>inserción masiva de documentos embebidos</li>
 <li>comprobación de checksums</li>
 <li>eliminación de documentos previos por <code>documentId</code></li>
 </ul>
-<h3>5. Ejecutar búsqueda vectorial</h3>
-<p>El servidor MCP se inicia con:</p>
-<pre><code class="language-bash">node mcp-server.js
+<h3 id="section-12">5. Ejecutar búsqueda vectorial</h3>
+<p class="fade-in-up">El servidor MCP se inicia con:</p>
+<pre class="fade-in-up"><code class="language-bash">node mcp-server.js
 </code></pre>
-<p>Las herramientas disponibles son:</p>
-<ul>
+<p class="fade-in-up">Las herramientas disponibles son:</p>
+<ul class="fade-in-up">
 <li><strong><code>mongodb_vector_search</code></strong>: Búsqueda semántica usando <code>$vectorSearch</code>.
   Parámetros:</li>
 <li><code>vector</code>: arreglo de números que representa el embedding de la consulta.</li>
@@ -162,105 +311,105 @@ GOOGLE_CHAT_WEBHOOK_URL=&quot;https://chat.googleapis.com/...&quot;
 <li><code>numCandidates</code>: cantidad de candidatos a evaluar, por defecto <code>50</code>.</li>
 <li><code>path</code>: campo vectorial dentro del documento, por defecto <code>embedding</code>.</li>
 </ul>
-<p>El pipeline usa <code>$vectorSearch</code> de MongoDB Atlas y luego proyecta:
+<p class="fade-in-up">El pipeline usa <code>$vectorSearch</code> de MongoDB Atlas y luego proyecta:
   - <code>documentId</code>
   - <code>text</code>
   - <code>page</code>
   - <code>chunkIndex</code>
   - <code>fileType</code>
   - <code>score</code> usando <code>$meta: "vectorSearchScore"</code></p>
-<ul>
+<ul class="fade-in-up">
 <li><strong><code>find_by_document_id</code></strong>: Búsqueda exacta por ID de documento.
   Parámetros:</li>
 <li><code>documentId</code>: (Requerido) string que representa el ID del documento a buscar.</li>
 </ul>
-<p>Retorna los fragmentos o el documento que coincida con ese <code>documentId</code> usando un <code>find()</code> estándar de MongoDB.</p>
-<h2>Ingesta de documentos</h2>
-<p>La forma más directa de procesar una carpeta nueva es:</p>
-<pre><code class="language-bash">python3 ingest.py /ruta/a/documentos
+<p class="fade-in-up">Retorna los fragmentos o el documento que coincida con ese <code>documentId</code> usando un <code>find()</code> estándar de MongoDB.</p>
+<h2 class="fade-in-up" id="section-13">Ingesta de documentos</h2>
+<p class="fade-in-up">La forma más directa de procesar una carpeta nueva es:</p>
+<pre class="fade-in-up"><code class="language-bash">python3 ingest.py /ruta/a/documentos
 </code></pre>
-<p><em>(Si no pasas una ruta, el script usa <code>DOCUMENTS_PATH</code> o la ruta por defecto).</em></p>
-<p>Si deseas <strong>forzar la actualización o re-ingesta</strong> de una carpeta completa o un archivo que ya fue procesado (y quieres borrar la versión anterior para evitar duplicados), utiliza:</p>
-<pre><code class="language-bash">python3 force_ingest.py /ruta/a/documentos
+<p class="fade-in-up"><em>(Si no pasas una ruta, el script usa <code>DOCUMENTS_PATH</code> o la ruta por defecto).</em></p>
+<p class="fade-in-up">Si deseas <strong>forzar la actualización o re-ingesta</strong> de una carpeta completa o un archivo que ya fue procesado (y quieres borrar la versión anterior para evitar duplicados), utiliza:</p>
+<pre class="fade-in-up"><code class="language-bash">python3 force_ingest.py /ruta/a/documentos
 </code></pre>
-<p>Ejemplo:</p>
-<pre><code class="language-bash">python3 ingest.py /Users/JACOLINV/Documents/docsEmb
+<p class="fade-in-up">Ejemplo:</p>
+<pre class="fade-in-up"><code class="language-bash">python3 ingest.py /Users/JACOLINV/Documents/docsEmb
 </code></pre>
-<h2>Ejemplo de uso de embeddings</h2>
-<p>Puedes generar un embedding para una consulta con Python:</p>
-<pre><code class="language-python">from embeddings import VoyageEmbedding
+<h2 class="fade-in-up" id="section-14">Ejemplo de uso de embeddings</h2>
+<p class="fade-in-up">Puedes generar un embedding para una consulta con Python:</p>
+<pre class="fade-in-up"><code class="language-python">from embeddings import VoyageEmbedding
 
-voyage = VoyageEmbedding(api_key=&quot;&lt;tu_api_key&gt;&quot;)
-query_vector = voyage.embed_query(&quot;¿Cómo funciona Atlas Vector Search?&quot;)
+voyage = VoyageEmbedding(api_key="&lt;tu_api_key&gt;")
+query_vector = voyage.embed_query("¿Cómo funciona Atlas Vector Search?")
 print(len(query_vector))
 </code></pre>
-<h2>Requerimientos y Definición del Índice Vectorial en Atlas</h2>
-<p>Antes de usar la búsqueda real, debes crear un índice de tipo <strong>Atlas Vector Search</strong> en MongoDB Atlas sobre la colección configurada (<code>knowledge</code>).</p>
-<h3>Definición JSON del Índice Vectorial (Atlas Vector Search Index)</h3>
-<p>Crea un índice de búsqueda vectorial en MongoDB Atlas con la siguiente definición:</p>
-<pre><code class="language-json">{
-  &quot;fields&quot;: [
+<h2 class="fade-in-up" id="section-15">Requerimientos y Definición del Índice Vectorial en Atlas</h2>
+<p class="fade-in-up">Antes de usar la búsqueda real, debes crear un índice de tipo <strong>Atlas Vector Search</strong> en MongoDB Atlas sobre la colección configurada (<code>knowledge</code>).</p>
+<h3 id="section-16">Definición JSON del Índice Vectorial (Atlas Vector Search Index)</h3>
+<p class="fade-in-up">Crea un índice de búsqueda vectorial en MongoDB Atlas con la siguiente definición:</p>
+<pre class="fade-in-up"><code class="language-json">{
+  "fields": [
     {
-      &quot;type&quot;: &quot;vector&quot;,
-      &quot;path&quot;: &quot;embedding&quot;,
-      &quot;numDimensions&quot;: 1024,
-      &quot;similarity&quot;: &quot;cosine&quot;
+      "type": "vector",
+      "path": "embedding",
+      "numDimensions": 1024,
+      "similarity": "cosine"
     }
   ]
 }
 </code></pre>
-<blockquote>
+<blockquote class="fade-in-up">
 <p>[!IMPORTANT]
 - <strong>Nombre del índice</strong>: Debe coincidir con <code>VECTOR_INDEX_NAME</code> (por defecto: <code>vector_index</code>).
 - <strong>Campo (<code>path</code>)</strong>: <code>embedding</code>.
 - <strong>Dimensiones (<code>numDimensions</code>)</strong>: <code>1024</code> (producido por <code>voyage-4-large</code> y <code>voyage-multimodal-3.5</code>).
 - <strong>Métrica (<code>similarity</code>)</strong>: <code>cosine</code> o <code>dotProduct</code>.</p>
 </blockquote>
-<hr />
-<h2>Esquema del Documento en MongoDB (Schema &amp; Metadata Spec)</h2>
-<p>Cada fragmento o imagen procesada se persiste como un documento BSON con la siguiente estructura:</p>
-<p><img alt="Esquema del Documento en MongoDB" src="diagrams/er.svg" /></p>
-<h3>Ejemplo de Documento en MongoDB:</h3>
-<pre><code class="language-json">{
-  &quot;_id&quot;: { &quot;$oid&quot;: &quot;664b3a123f89a9c1e0123456&quot; },
-  &quot;documentId&quot;: &quot;manual_usuario_chunk_0&quot;,
-  &quot;checksum&quot;: &quot;d41d8cd98f00b204e9800998ecf8427e&quot;,
-  &quot;source&quot;: {
-    &quot;path&quot;: &quot;/ruta/a/documentos/manual_usuario.docx&quot;,
-    &quot;name&quot;: &quot;manual_usuario.docx&quot;
+<hr/>
+<h2 class="fade-in-up" id="section-17">Esquema del Documento en MongoDB (Schema &amp; Metadata Spec)</h2>
+<p class="fade-in-up">Cada fragmento o imagen procesada se persiste como un documento BSON con la siguiente estructura:</p>
+<p class="fade-in-up"><div class="fade-in-up" style="text-align: center; margin: 30px 0;"><img alt="Esquema del Documento en MongoDB" src="diagrams/er.svg"/></div></p>
+<h3 id="section-18">Ejemplo de Documento en MongoDB:</h3>
+<pre class="fade-in-up"><code class="language-json">{
+  "_id": { "$oid": "664b3a123f89a9c1e0123456" },
+  "documentId": "manual_usuario_chunk_0",
+  "checksum": "d41d8cd98f00b204e9800998ecf8427e",
+  "source": {
+    "path": "/ruta/a/documentos/manual_usuario.docx",
+    "name": "manual_usuario.docx"
   },
-  &quot;fileType&quot;: &quot;.docx&quot;,
-  &quot;modality&quot;: &quot;text&quot;,
-  &quot;page&quot;: null,
-  &quot;chunkIndex&quot;: 0,
-  &quot;text&quot;: &quot;Introducción y configuración del sistema...&quot;,
-  &quot;embedding&quot;: [0.01234, -0.05678, 0.08912, &quot;... (1024 floats)&quot;],
-  &quot;embeddingModel&quot;: &quot;voyage-multimodal-3.5&quot;,
-  &quot;createdAt&quot;: &quot;2026-09-30T20:30:00.000Z&quot;
+  "fileType": ".docx",
+  "modality": "text",
+  "page": null,
+  "chunkIndex": 0,
+  "text": "Introducción y configuración del sistema...",
+  "embedding": [0.01234, -0.05678, 0.08912, "... (1024 floats)"],
+  "embeddingModel": "voyage-multimodal-3.5",
+  "createdAt": "2026-09-30T20:30:00.000Z"
 }
 </code></pre>
-<hr />
-<h2>Configuración del Cliente MCP (Agent Client Integration)</h2>
-<p>Para conectar este servidor MCP con clientes de IA (Claude Code, Claude Desktop, Antigravity, Cline, Gemini Code Assist, etc.), agrega la siguiente configuración en tu archivo de herramientas MCP (<code>claude_desktop_config.json</code>, <code>mcp_settings.json</code> o settings de tu entorno):</p>
-<pre><code class="language-json">{
-  &quot;mcpServers&quot;: {
-    &quot;mongodb-vector-skill&quot;: {
-      &quot;command&quot;: &quot;node&quot;,
-      &quot;args&quot;: [
-        &quot;/ruta/absoluta/a/mongodb-vector-skill/mcp-server.js&quot;
+<hr/>
+<h2 class="fade-in-up" id="section-19">Configuración del Cliente MCP (Agent Client Integration)</h2>
+<p class="fade-in-up">Para conectar este servidor MCP con clientes de IA (Claude Code, Claude Desktop, Antigravity, Cline, Gemini Code Assist, etc.), agrega la siguiente configuración en tu archivo de herramientas MCP (<code>claude_desktop_config.json</code>, <code>mcp_settings.json</code> o settings de tu entorno):</p>
+<pre class="fade-in-up"><code class="language-json">{
+  "mcpServers": {
+    "mongodb-vector-skill": {
+      "command": "node",
+      "args": [
+        "/ruta/absoluta/a/mongodb-vector-skill/mcp-server.js"
       ],
-      &quot;env&quot;: {
-        &quot;MONGODB_URI&quot;: &quot;mongodb+srv://&lt;usuario&gt;:&lt;password&gt;@&lt;cluster&gt;/test?retryWrites=true&amp;w=majority&quot;,
-        &quot;MONGODB_DB&quot;: &quot;knowledgeVectors&quot;,
-        &quot;MONGODB_COLLECTION&quot;: &quot;knowledge&quot;,
-        &quot;VECTOR_INDEX_NAME&quot;: &quot;vector_index&quot;
+      "env": {
+        "MONGODB_URI": "mongodb+srv://&lt;usuario&gt;:&lt;password&gt;@&lt;cluster&gt;/test?retryWrites=true&amp;w=majority",
+        "MONGODB_DB": "knowledgeVectors",
+        "MONGODB_COLLECTION": "knowledge",
+        "VECTOR_INDEX_NAME": "vector_index"
       }
     }
   }
 }
 </code></pre>
-<h2>Estructura de archivos</h2>
-<pre><code class="language-text">.
+<h2 class="fade-in-up" id="section-20">Estructura de archivos</h2>
+<pre class="fade-in-up"><code class="language-text">.
 ├── chunker.py
 ├── embeddings.py
 ├── force_ingest.py
@@ -273,8 +422,8 @@ print(len(query_vector))
 ├── SKILL.md
 └── SKILL_old.md
 </code></pre>
-<h3>Descripción por archivo</h3>
-<ul>
+<h3 id="section-21">Descripción por archivo</h3>
+<ul class="fade-in-up">
 <li><code>ingest.py</code>: procesa documentos y genera embeddings para insertarlos en MongoDB.</li>
 <li><code>force_ingest.py</code>: herramienta que fuerza la re-ingesta de archivos, borrando versiones o duplicados previos por nombre.</li>
 <li><code>loaders.py</code>: cargadores para Markdown, PDF e imágenes.</li>
@@ -284,54 +433,54 @@ print(len(query_vector))
 <li><code>mcp-server.js</code>: servidor MCP que expone la herramienta de búsqueda vectorial.</li>
 <li><code>SKILL.md</code>: definición de la skill para uso del entorno de agentes.</li>
 </ul>
-<h2>Validación</h2>
-<p>Para validar el proyecto de forma estática, ejecuta:</p>
-<pre><code class="language-bash">npm test
+<h2 class="fade-in-up" id="section-22">Validación</h2>
+<p class="fade-in-up">Para validar el proyecto de forma estática, ejecuta:</p>
+<pre class="fade-in-up"><code class="language-bash">npm test
 </code></pre>
-<p>Este comando comprueba:</p>
-<ul>
+<p class="fade-in-up">Este comando comprueba:</p>
+<ul class="fade-in-up">
 <li>sintaxis JavaScript de <code>mcp-server.js</code></li>
 <li>compilación de archivos Python con <code>compileall</code></li>
 </ul>
-<h2>Solución de problemas</h2>
-<h3>Error de conexión a MongoDB</h3>
-<ul>
+<h2 class="fade-in-up" id="section-23">Solución de problemas</h2>
+<h3 id="section-24">Error de conexión a MongoDB</h3>
+<ul class="fade-in-up">
 <li>Revisa que <code>MONGODB_URI</code> sea válida.</li>
 <li>Verifica que el cluster esté disponible y que expongas la base de datos correcta.</li>
 <li>Comprueba el nombre del índice vectorial.</li>
 </ul>
-<h3>Error por falta de variables de entorno</h3>
-<ul>
+<h3 id="section-25">Error por falta de variables de entorno</h3>
+<ul class="fade-in-up">
 <li>Asegúrate de cargar <code>.env</code> antes de ejecutar la ingesta.</li>
 <li>Verifica que <code>VOYAGE_API_KEY</code> y <code>MONGODB_URI</code> existan.</li>
 </ul>
-<h3>Resultados vacíos o pobres</h3>
-<ul>
+<h3 id="section-26">Resultados vacíos o pobres</h3>
+<ul class="fade-in-up">
 <li>Confirma que el modelo usado para documentos y consultas sea compatible.</li>
 <li>Revisa que la dimensión del vector coincida con la del índice.</li>
 <li>Mejora la calidad de los chunks o reduce la cantidad de contenido por bloque.</li>
 </ul>
-<h3>Errores de modelo multimodal</h3>
-<ul>
+<h3 id="section-27">Errores de modelo multimodal</h3>
+<ul class="fade-in-up">
 <li>Algunas extensiones como PDF, JPG, JPEG y PNG requieren un modelo multimodal.</li>
 <li>Si usas un modelo no compatible, la ingesta puede fallar en <code>build_chunks()</code>.</li>
 </ul>
-<h2>Resumen</h2>
-<p>Esta skill combina:</p>
-<ul>
+<h2 class="fade-in-up" id="section-28">Resumen</h2>
+<p class="fade-in-up">Esta skill combina:</p>
+<ul class="fade-in-up">
 <li>carga de documentos,</li>
 <li>generación de embeddings,</li>
 <li>almacenamiento vectorial en MongoDB Atlas,</li>
 <li>recuperación semántica con <code>mongodb_vector_search</code>.</li>
 </ul>
-<p>Es una base útil para construir un RAG local o un sistema de búsqueda por similitud sobre documentación y conocimiento digital.</p>
-<h2>Referencias internas</h2>
-<ul>
+<p class="fade-in-up">Es una base útil para construir un RAG local o un sistema de búsqueda por similitud sobre documentación y conocimiento digital.</p>
+<h2 class="fade-in-up" id="section-29">Referencias internas</h2>
+<ul class="fade-in-up">
 <li><code>SKILL.md</code>: especificación de la skill.</li>
 <li><code>mcp-server.js</code>: herramienta de acceso a la búsqueda vectorial.</li>
 <li><code>ingest.py</code>: flujo principal de ingesta y embeddings.</li>
 </ul>
-<h2>Siguiente paso recomendado</h2>
+<h2 class="fade-in-up" id="section-30">Siguiente paso recomendado</h2>
 <ol>
 <li>Configura <code>.env</code> con tus credenciales reales.</li>
 <li>Define el índice vectorial en Atlas.</li>
@@ -339,10 +488,11 @@ print(len(query_vector))
 <li>Ejecuta <code>python3 ingest.py</code>.</li>
 <li>Inicia el MCP server y prueba <code>mongodb_vector_search</code> con un embedding de consulta real.</li>
 </ol>
+        </div>
+    </main>
+</div>
 
-
-
-
+<div id="btt" title="Volver arriba"><i class="fas fa-arrow-up"></i></div>
 
 <div id="zoom-modal" class="zoom-modal">
     <span class="zoom-close" onclick="closeZoom()">&times;</span>
@@ -516,6 +666,59 @@ print(len(query_vector))
         setTransform();
     }
 </script>
+
+
+
+<script>
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('visible');
+            }
+        });
+    }, { threshold: 0.1, rootMargin: "0px 0px -50px 0px" });
+
+    document.querySelectorAll('.fade-in-up').forEach((el) => observer.observe(el));
+
+    const tocLinks = document.querySelectorAll('.toc-list a');
+    const sections = document.querySelectorAll('h2, h3');
+    
+    const tocObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                const id = entry.target.getAttribute('id');
+                tocLinks.forEach(link => {
+                    link.classList.remove('active');
+                    if (link.getAttribute('href') === '#' + id) {
+                        link.classList.add('active');
+                    }
+                });
+            }
+        });
+    }, { rootMargin: "-20% 0px -80% 0px" });
+
+    sections.forEach(section => tocObserver.observe(section));
+
+    tocLinks.forEach(link => {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            const targetId = this.getAttribute('href').substring(1);
+            const targetEl = document.getElementById(targetId);
+            window.scrollTo({ top: targetEl.offsetTop - 40, behavior: 'smooth' });
+        });
+    });
+
+    const btt = document.getElementById('btt');
+    window.addEventListener('scroll', () => {
+        if (window.scrollY > 500) btt.classList.add('show');
+        else btt.classList.remove('show');
+    });
+
+    btt.addEventListener('click', () => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+</script>
+
 
 </body>
 </html>
