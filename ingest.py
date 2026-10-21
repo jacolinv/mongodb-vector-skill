@@ -129,6 +129,7 @@ def build_chunks(path, document_id, blocks, multimodal, checksum):
                 "hasImage": has_image,
                 "u": os.getenv("USER") or os.getenv("USERNAME") or "Desconocido",
                 "i": datetime.utcnow(),
+                "version": "2.7.1784.105",
                 "_parts": parts
             })
 
@@ -209,7 +210,7 @@ def process_file(path, documents_path, voyage, mongo, force_replacement=False):
     print(f"Insertados: {len(all_chunks)}")
     
     # Enviar notificación por webhook
-    send_google_chat_notification(path.name, is_replacement=(deleted_count > 0 or force_replacement))
+    pass # send_google_chat_notification desactivada temporalmente
 
 def parse_args(argv=None):
     parser = argparse.ArgumentParser(
@@ -286,6 +287,23 @@ def main(argv=None):
     print(f"Documentos encontrados: {len(files)}")
     for file in files:
         process_file(file, documents_path, voyage, mongo)
+
+    print(f"Ingesta completada.")
+    
+    # Enviar notificacion final
+    webhook_url = os.getenv("GOOGLE_CHAT_WEBHOOK_URL")
+    if webhook_url:
+        import urllib.request
+        import json
+        payload = {"text": "Se procesaron los archivos de enactor-kb version 2.7.1784.105"}
+        data = json.dumps(payload).encode("utf-8")
+        req = urllib.request.Request(webhook_url, data=data, headers={"Content-Type": "application/json"})
+        try:
+            urllib.request.urlopen(req)
+            print("Notificacion final enviada a Google Chat.")
+        except Exception as e:
+            print(f"Error enviando notificacion: {e}")
+
 
 if __name__ == "__main__":
     main()

@@ -1,21 +1,23 @@
 ---
 name: mongodb-vector-skill
-description: "Use this skill to ingest Markdown, Office (Word/Excel), PDF, and image knowledge into MongoDB Atlas and perform semantic vector search through the local MCP server. Trigger for MongoDB $vectorSearch, embeddings, Voyage AI, Atlas Search indexes, MCP vector retrieval, or validating this workspace."
-argument-hint: "Describe the knowledge source, query, or validation you need."
+version: "1.70"
+description: "Use this skill (v1.70) to ingest Markdown, Office (Word/Excel), PDF, code/configuration, binary/archive metadata, and image knowledge into MongoDB Atlas, perform semantic vector search, and query Atlassian (Confluence & Jira) through the local MCP server. Trigger for MongoDB $vectorSearch, embeddings, Voyage AI, Atlas Search indexes, Confluence/Jira MCP tools, MCP vector retrieval, or validating this workspace."
+argument-hint: "Describe the knowledge source, query, Atlassian search, or validation you need."
 user-invocable: true
 ---
 
-# MongoDB Vector Search
+# MongoDB Vector Search (v1.70)
 
 ## Purpose
 
-Use this workspace to prepare multimodal knowledge, generate embeddings, persist documents in MongoDB Atlas, and retrieve relevant documents through the `mongodb_vector_search` MCP tool.
+Use this workspace to prepare multimodal and multi-format knowledge, generate embeddings, persist documents (with optional `version` metadata) in MongoDB Atlas, retrieve relevant documents through the `mongodb_vector_search` and `find_by_document_id` MCP tools, and query Atlassian Confluence pages and Jira issues directly from the MCP server.
 
 ## When to Use
 
 - Build or validate a semantic-search or retrieval-augmented-generation workflow.
-- Ingest `.md`, `.txt`, `.csv`, `.xml`, `.json`, `.js`, `.docx`, `.xlsx`, `.pdf`, `.jpg`, `.jpeg`, or `.png` sources.
+- Ingest `.md`, `.txt`, `.csv`, `.xml`, `.json`, `.js`, `.docx`, `.xlsx`, `.pdf`, `.jpg`, `.jpeg`, `.png`, `.gif`, `.bmp`, `.webp`, `.ico`, `.svg`, Enactor/Enterprise files (`.process`, `.page`, `.layout`, `.theme`, `.style`, `.message`, `.flf`, `.def`, `.xsd`, `.wsdl`), code/scripts (`.html`, `.htm`, `.properties`, `.sh`, `.bat`, `.sql`), or binary/archive/certificate metadata (`.jar`, `.class`, `.war`, `.ear`, `.zip`, `.tar`, `.gz`, `.key`, `.lic`, `.cer`, `.crt`, `.jks`, `.keystore`) sources.
 - Generate document or query embeddings with Voyage AI.
+- Search and read Confluence documentation or Jira issues via MCP tools (`search_confluence`, `read_confluence_page`, `search_jira_issues`, `read_jira_issue`).
 - Diagnose configuration, embedding-dimension, index, or MCP server problems.
 
 ## Prerequisites
@@ -28,7 +30,10 @@ Use this workspace to prepare multimodal knowledge, generate embeddings, persist
    - `MONGODB_COLLECTION` (defaults to `knowledge`)
    - `VECTOR_INDEX_NAME` (defaults to `vector_index`)
    - `VOYAGE_API_KEY` for embedding ingestion or query generation
-   - `GOOGLE_CHAT_WEBHOOK_URL` (optional) to trigger upload and replacement notifications
+   - `GOOGLE_CHAT_WEBHOOK_URL` (optional) to trigger final batch upload and replacement summary notifications
+   - `ATLASSIAN_DOMAIN` (e.g. `https://liverpooldigital.atlassian.net`)
+   - `ATLASSIAN_USER` (Atlassian account email)
+   - `ATLASSIAN_API_TOKEN` (Atlassian API token for Confluence & Jira)
 4. Create an Atlas Vector Search index whose `path`, dimensions, and similarity metric match the generated embeddings. The default embedding dimension in `embeddings.py` is `1024`.
 
 ## Procedure
@@ -54,17 +59,17 @@ Use `VoyageEmbedding` from `embeddings.py`. Route documents through `model_for_e
 
 ### 4. Persist knowledge
 
-Store each chunk with its embedding and enough metadata to identify the source, document, and page. Use `MongoDB` from `mongodb.py` for insert and checksum-based update workflows. Avoid storing credentials or unbounded raw payloads in metadata.
+Store each chunk with its embedding and enough metadata to identify the source, document, version, and page. Use `MongoDB` from `mongodb.py` for insert and checksum-based update workflows. Avoid storing credentials or unbounded raw payloads in metadata.
 
 To ingest a folder recursively, run:
 
 ```bash
-python ingest.py /path/to/documents
+python ingest.py /path/to/documents --version "1.0.0"
 ```
 
-*(Use `python force_ingest.py /path/to/documents` if you need to force re-ingestion and overwrite duplicates).* The path is optional; without it, scripts use `DOCUMENTS_PATH`. Supported files are `.md`, `.txt`, `.csv`, `.xml`, `.json`, `.js`, `.docx`, `.xlsx`, `.pdf`, `.jpg`, `.jpeg`, and `.png`.
+*(Use `python force_ingest.py /path/to/documents` if you need to force re-ingestion and overwrite duplicates).* The path and `--version` are optional; without a path, scripts use `DOCUMENTS_PATH`. At the end of the ingestion run, a single consolidated summary notification is sent to Google Chat if `GOOGLE_CHAT_WEBHOOK_URL` is configured.
 
-### 5. Run vector retrieval
+### 5. Run vector retrieval & Atlassian MCP tools
 
 Start the MCP server with `node mcp-server.js`. The following tools are available:
 
@@ -82,6 +87,24 @@ Invoke with:
 - `documentId`: required string representing the document ID to search for.
 
 The server uses the standard `find()` query in MongoDB to return documents matching the specific `documentId`.
+
+**search_confluence**
+Invoke with:
+- `query`: text or CQL query to search in Confluence (`type=page`).
+- `limit`: maximum results; defaults to `10`.
+
+**read_confluence_page**
+Invoke with:
+- `pageId`: required Confluence page ID to retrieve its title, space, URL, and cleaned text body.
+
+**search_jira_issues**
+Invoke with:
+- `jql`: bounded JQL query (e.g., `updated >= -15d ORDER BY updated DESC`) using Jira's `/rest/api/3/search/jql` endpoint.
+- `maxResults`: maximum results; defaults to `10`.
+
+**read_jira_issue**
+Invoke with:
+- `issueKey`: required Jira issue key (e.g., `PROJ-123`) to retrieve full details, description, and recent comments.
 
 ### 6. Interpret failures
 

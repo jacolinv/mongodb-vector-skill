@@ -1,22 +1,11 @@
 import os
-
 import voyageai
+from tenacity import retry, wait_exponential, stop_after_attempt, retry_if_exception_type
 
-TEXT_MODEL = os.getenv(
-    "VOYAGE_TEXT_MODEL",
-    "voyage-4-large"
-)
-
-MULTIMODAL_MODEL = os.getenv(
-    "VOYAGE_MULTIMODAL_MODEL",
-    "voyage-multimodal-3.5"
-)
-
+TEXT_MODEL = os.getenv("VOYAGE_TEXT_MODEL", "voyage-4-large")
+MULTIMODAL_MODEL = os.getenv("VOYAGE_MULTIMODAL_MODEL", "voyage-multimodal-3.5")
 EMBEDDING_DIMENSIONS = 1024
 
-# Enrutamiento de modelo por extension.
-# IMPORTANTE: todos los tipos deben apuntar al mismo modelo si comparten el mismo
-# indice vectorial; embeddings de modelos distintos no son comparables entre si.
 MODEL_BY_EXTENSION = {
     ".pdf": MULTIMODAL_MODEL,
     ".jpg": MULTIMODAL_MODEL,
@@ -29,74 +18,95 @@ MODEL_BY_EXTENSION = {
     ".json": MULTIMODAL_MODEL,
     ".js": MULTIMODAL_MODEL,
     ".docx": MULTIMODAL_MODEL,
-    ".xlsx": MULTIMODAL_MODEL
+    ".xlsx": MULTIMODAL_MODEL,
+    ".java": MULTIMODAL_MODEL,
+    ".properties": MULTIMODAL_MODEL,
+    ".xsd": MULTIMODAL_MODEL,
+    ".rptdesign": MULTIMODAL_MODEL,
+    ".mf": MULTIMODAL_MODEL,
+    ".xslt": MULTIMODAL_MODEL,
+    ".nfo": MULTIMODAL_MODEL,
+    ".wsdl": MULTIMODAL_MODEL,
+    ".css": MULTIMODAL_MODEL,
+    ".pom": MULTIMODAL_MODEL,
+    ".rptconfig": MULTIMODAL_MODEL,
+    ".tld": MULTIMODAL_MODEL,
+    ".jsonl": MULTIMODAL_MODEL,
+    ".htd": MULTIMODAL_MODEL,
+    ".rpttemplate": MULTIMODAL_MODEL,
+    ".rptlibrary": MULTIMODAL_MODEL,
+    ".providers": MULTIMODAL_MODEL,
+    ".mex": MULTIMODAL_MODEL
 }
 
-# Modelo usado para embeber la pregunta del usuario
 QUERY_MODEL = MULTIMODAL_MODEL
-
 
 def model_for_extension(extension):
     extension = extension.lower()
-
     if extension not in MODEL_BY_EXTENSION:
-        raise ValueError(
-            f"Sin modelo configurado para: {extension}"
-        )
-
+        raise ValueError(f"Sin modelo configurado para: {extension}")
     return MODEL_BY_EXTENSION[extension]
-
 
 def is_multimodal(model):
     return "multimodal" in model
 
-
 class VoyageEmbedding:
     def __init__(self, api_key):
-        self.client = voyageai.Client(
-            api_key=api_key
-        )
+        self.api_key = api_key
+        import requests
+        self.requests = requests
 
+    @retry(
+        wait=wait_exponential(multiplier=1, min=4, max=60),
+        stop=stop_after_attempt(10),
+        retry=retry_if_exception_type(Exception),
+        reraise=True
+    )
     def embed_documents(self, contents, model=TEXT_MODEL):
-        """contents: lista de chunks.
-
-        Cada chunk es una lista de partes (str y/o PIL.Image) si el modelo es
-        multimodal, o un str si el modelo es solo texto.
-        """
         if is_multimodal(model):
-            response = self.client.multimodal_embed(
-                inputs=contents,
-                model=model,
-                input_type="document",
-                truncation=True
-            )
-            return response.embeddings
+            formatted_inputs = []
+            for parts in contents:
+                formatted_parts = []
+                for part in parts:
+                    if isinstance(part, str):
+                        formatted_parts.append({"type": "text", "text": part})
+                    else:
+                        import io
+                        import base64
+                        buffered = io.BytesIO()
+                        part.save(buffered, format="JPEG")
+                        img_str = base64.b64encode(buffered.getvalue()).decode("utf-8")
+                        formatted_parts.append({"type": "image_base64", "image_base64": f"data:image/jpeg;base64,{img_str}"})
+                formatted_inputs.append({"content": formatted_parts})
+            
+            headers = {
+                "Authorization": f"Bearer {self.api_key}",
+                "Content-Type": "application/json"
+            }
+            payload = {
+                "inputs": formatted_inputs,
+                "model": model,
+                "input_type": "document"
+            }
+            resp = self.requests.post("https://ai.mongodb.com/v1/multimodalembeddings", headers=headers, json=payload, timeout=300)
+            if resp.status_code != 200:
+                raise Exception(f"API Error {resp.status_code}: {resp.text}")
+            return [d["embedding"] for d in resp.json()["data"]]
 
-        response = self.client.embed(
-            contents,
-            model=model,
-            input_type="document",
-            output_dimension=EMBEDDING_DIMENSIONS
-        )
-        return response.embeddings
+        # Fallback to standard embeddings if text model is used
+        headers = {
+            "Authorization": f"Bearer {self.api_key}",
+            "Content-Type": "application/json"
+        }
+        payload = {
+            "input": contents,
+            "model": model,
+            "input_type": "document"
+        }
+        resp = self.requests.post("https://ai.mongodb.com/v1/embeddings", headers=headers, json=payload, timeout=300)
+        if resp.status_code != 200:
+            raise Exception(f"API Error {resp.status_code}: {resp.text}")
+        return [d["embedding"] for d in resp.json()["data"]]
 
     def embed_query(self, text, model=QUERY_MODEL):
-        if is_multimodal(model):
-            response = self.client.multimodal_embed(
-                inputs=[[text]],
-                model=model,
-                input_type="query",
-                truncation=True
-            )
-            return response.embeddings[0]
-
-        response = self.client.embed(
-            [text],
-            model=model,
-            input_type="query",
-            output_dimension=EMBEDDING_DIMENSIONS
-        )
-        return response.embeddings[0]
-
-
-
+        return self.embed_documents([[text]] if is_multimodal(model) else [text], model=model)[0]

@@ -1,21 +1,21 @@
-# MongoDB Vector Search Skill v1.6.0
+# MongoDB Vector Search Skill v1.70 (1.7.0)
 
-Una skill para preparar conocimiento multimodal, generar embeddings con Voyage AI, almacenarlos en MongoDB Atlas y recuperarlos con búsqueda vectorial mediante un servidor MCP local.
+Una skill para preparar conocimiento multimodal y multiformato, generar embeddings con Voyage AI, almacenarlos en MongoDB Atlas (con soporte de versionado) y recuperarlos con búsqueda vectorial e integración directa con Atlassian (Confluence y Jira) mediante un servidor MCP local.
 
 ## Propósito
 
 Este proyecto permite:
 
-- Ingestar documentos en formato Markdown, Texto (txt, csv, xml, json, js), Office (docx, xlsx), PDF e imágenes.
+- Ingestar documentos en formato Markdown, Texto/Código (`.txt`, `.csv`, `.xml`, `.json`, `.js`, `.html`, `.properties`, `.sh`, `.sql`, etc.), archivos empresariales Enactor (`.process`, `.page`, `.layout`, `.theme`, `.style`, `.message`, `.flf`, `.def`, `.xsd`, `.wsdl`), Office (`.docx`, `.xlsx`), PDF, imágenes (`.jpg`, `.jpeg`, `.png`, `.gif`, `.bmp`, `.webp`, `.ico`, `.svg`) y metadatos de binarios/archivos empaquetados/certificados (`.jar`, `.class`, `.zip`, `.tar`, `.gz`, `.key`, `.lic`, `.cer`, `.crt`, `.jks`).
+- Etiquetar lotes de documentos con un campo de versión (`--version` / `DOCUMENT_VERSION`).
 - Dividir el contenido en chunks para mejorar la recuperación semántica.
 - Generar embeddings con Voyage AI.
 - Guardar los documentos y sus vectores en MongoDB Atlas.
-- Notificar automáticamente a Google Chat (Webhook) las subidas y los reemplazos de documentos.
-- Ejecutar una búsqueda vectorial a través del tool `mongodb_vector_search` expuesto por `mcp-server.js`.
+- Notificar automáticamente a Google Chat (Webhook) un resumen consolidado al finalizar la ingesta o reemplazo de documentos.
+- Ejecutar búsqueda vectorial (`mongodb_vector_search`), búsqueda por ID (`find_by_document_id`) y consultas a Confluence (`search_confluence`, `read_confluence_page`) y Jira (`search_jira_issues`, `read_jira_issue`) expuestas por `mcp-server.js`.
 
 La idea principal es soportar un flujo de Retrieval-Augmented Generation (RAG) o búsqueda semántica sobre documentos locales.
-
-## ¿Cuándo usar esta skill?
+\n![Flujo RAG General](diagrams/ragGeneral.png)\n\n## ¿Cuándo usar esta skill?
 
 Es útil cuando necesitas:
 
@@ -312,6 +312,27 @@ Las herramientas disponibles son:
   - `documentId`: (Requerido) string que representa el ID del documento a buscar.
   
   Retorna los fragmentos o el documento que coincida con ese `documentId` usando un `find()` estándar de MongoDB.
+
+## Ingesta de documentos
+
+La forma más directa de procesar una carpeta nueva es:
+
+```bash
+python3 ingest.py /ruta/a/documentos
+```
+*(Si no pasas una ruta, el script usa `DOCUMENTS_PATH` o la ruta por defecto).*
+
+Si deseas **forzar la actualización o re-ingesta** de una carpeta completa o un archivo que ya fue procesado (y quieres borrar la versión anterior para evitar duplicados), utiliza:
+
+```bash
+python3 force_ingest.py /ruta/a/documentos
+```
+
+Ejemplo:
+
+```bash
+python3 ingest.py /Users/JACOLINV/Documents/docsEmb
+```
 
 ## Ejemplo de uso de embeddings
 

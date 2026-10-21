@@ -1,7 +1,7 @@
 {
   "name": "@jacolinv/mongodb-vector-skill",
-  "version": "1.6.0",
-  "description": "MCP server and ingestion helpers for MongoDB Atlas Vector Search",
+  "version": "1.7.0",
+  "description": "MCP server and ingestion helpers for MongoDB Atlas Vector Search & Atlassian (v1.70)",
   "main": "index.js",
   "scripts": {
     "test": "node --check mcp-server.js && python3 -m compileall -q chunker.py embeddings.py loaders.py mongodb.py ingest.py"
