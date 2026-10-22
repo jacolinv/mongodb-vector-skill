@@ -32,11 +32,12 @@ Es útil cuando necesitas:
 
 Antes de usar la skill debes tener:
 
+- **Conexión activa a la VPN corporativa**: Indispensable para conectarse, obtener información (búsqueda semántica) e ingestar documentos en la bóveda de conocimiento de MongoDB Atlas.
 - Node.js y npm instalados.
 - Python 3 disponible en el entorno activo.
 - Una instancia de MongoDB Atlas con soporte a Atlas Vector Search.
 - Una API key válida de Voyage AI.
-- (Opcional) Una cuenta y API Token de Atlassian Cloud para las herramientas de Confluence y Jira.
+- (Opcional) Un API Token de Atlassian Cloud (`ATLASSIAN_API_TOKEN`) para las herramientas de Confluence y Jira.
 - Un archivo `.env` con las variables necesarias.
 
 ## Instalación
@@ -57,7 +58,7 @@ python3 -m pip install pymupdf pillow voyageai python-dotenv python-docx openpyx
 
 ```env
 # MongoDB configuración
-MONGODB_URI="mongodb+srv://<usuario>:<password>@<cluster>/test?retryWrites=true&w=majority"
+MONGODB_URI="mongodb+srv://<usuario>:<password>@<cluster>.mongodb.net/"
 MONGODB_DB="knowledgeVectors"
 MONGODB_COLLECTION="knowledge"
 VECTOR_INDEX_NAME="vector_index"
@@ -74,10 +75,9 @@ GOOGLE_CHAT_WEBHOOK_URL="https://chat.googleapis.com/..."
 
 # Configuración de Atlassian (Confluence & Jira — Comercio Unificado)
 ATLASSIAN_DOMAIN="https://tu-dominio.atlassian.net"
-ATLASSIAN_USER="usuario@empresa.com.mx"
-ATLASSIAN_API_TOKEN="<tu_atlassian_api_token>"
 CONFLUENCE_ALLOWED_SPACES="CU"
 JIRA_ALLOWED_PROJECTS="CM,CPI,CUD,CUQ"
+ATLASSIAN_API_TOKEN="<tu_atlassian_api_token>"
 ```
 
 > El archivo `.env` no debe subirse al repositorio si incluye secretos reales.
@@ -86,7 +86,7 @@ JIRA_ALLOWED_PROJECTS="CM,CPI,CUD,CUQ"
 
 Estas son las variables que usa el proyecto:
 
-- `MONGODB_URI`: cadena de conexión a MongoDB Atlas.
+- `MONGODB_URI`: cadena de conexión a MongoDB Atlas (requiere VPN corporativa activa).
 - `MONGODB_DB`: base de datos de destino. Por defecto: `knowledgeVectors`.
 - `MONGODB_COLLECTION`: colección donde se almacenan los chunks. Por defecto: `knowledge`.
 - `VECTOR_INDEX_NAME`: nombre del índice vectorial en Atlas. Por defecto: `vector_index`.
@@ -98,8 +98,7 @@ Estas son las variables que usa el proyecto:
 - `GOOGLE_CHAT_WEBHOOK_URL`: (Opcional) URL del webhook de Google Chat para enviar la notificación resumen al finalizar la ingesta.
 - `EMBED_BATCH_SIZE`: tamaño del lote para embedding en batch.
 - `ATLASSIAN_DOMAIN`: dominio de Atlassian Cloud (ej. `https://liverpooldigital.atlassian.net`).
-- `ATLASSIAN_USER`: correo electrónico de la cuenta de Atlassian.
-- `ATLASSIAN_API_TOKEN`: token de API de Atlassian para autenticar peticiones REST a Confluence y Jira (soporta tanto tokens clásicos como **Scoped API Tokens** de solo lectura enrutados automáticamente vía `api.atlassian.com/ex/{product}/{cloudId}`).
+- `ATLASSIAN_API_TOKEN`: token de API de Atlassian para autenticar peticiones REST a Confluence y Jira mediante `Authorization: Bearer <ATLASSIAN_API_TOKEN>` (soporta **Scoped API Tokens** de solo lectura enrutados automáticamente vía `api.atlassian.com/ex/{product}/{cloudId}`).
 - `CONFLUENCE_ALLOWED_SPACES`: lista separada por comas de claves de espacios permitidos en Confluence (por defecto `CU` — Comercio Unificado).
 - `JIRA_ALLOWED_PROJECTS`: lista separada por comas de claves de proyectos permitidos en Jira (por defecto `CM,CPI,CUD,CUQ` — proyectos de Comercio Unificado).
 
@@ -469,21 +468,20 @@ Para conectar este servidor MCP con clientes de IA (Antigravity, Claude Code, Cl
 ```json
 {
   "mcpServers": {
-    "mongodb-vector-mcp": {
+    "mongodb-vector-skill": {
       "command": "node",
       "args": [
         "/ruta/absoluta/a/mongodb-vector-skill/mcp-server.js"
       ],
       "env": {
-        "MONGODB_URI": "mongodb+srv://<usuario>:<password>@<cluster>/test?retryWrites=true&w=majority",
+        "MONGODB_URI": "mongodb+srv://<usuario>:<password>@<cluster>.mongodb.net/",
         "MONGODB_DB": "knowledgeVectors",
         "MONGODB_COLLECTION": "knowledge",
         "VECTOR_INDEX_NAME": "vector_index",
         "ATLASSIAN_DOMAIN": "https://tu-dominio.atlassian.net",
-        "ATLASSIAN_USER": "usuario@empresa.com.mx",
-        "ATLASSIAN_API_TOKEN": "<tu_atlassian_api_token>",
         "CONFLUENCE_ALLOWED_SPACES": "CU",
-        "JIRA_ALLOWED_PROJECTS": "CM,CPI,CUD,CUQ"
+        "JIRA_ALLOWED_PROJECTS": "CM,CPI,CUD,CUQ",
+        "ATLASSIAN_API_TOKEN": "<tu_atlassian_api_token>"
       }
     }
   }
@@ -505,9 +503,12 @@ Para conectar este servidor MCP con clientes de IA (Antigravity, Claude Code, Cl
 ├── query_mongo.js
 ├── query_mongo.py
 ├── test-find.js
+├── GUIA_RAPIDA_LLM.md
 ├── MANUAL_INSTALACION_CONFIGURACION.md
 ├── README.md
-└── SKILL.md
+├── SKILL.md
+├── guia-rapida-llm.html
+└── index.html
 ```
 
 ### Descripción por archivo
@@ -519,6 +520,9 @@ Para conectar este servidor MCP con clientes de IA (Antigravity, Claude Code, Cl
 - `chunker.py`: división del texto en chunks inteligentes con superposición de oraciones.
 - `mongodb.py`: operaciones de persistencia, actualización de versión y validación de checksums en MongoDB.
 - `mcp-server.js`: servidor MCP que expone las herramientas de búsqueda vectorial en MongoDB Atlas y consulta de solo lectura a Confluence y Jira (acotado a Comercio Unificado).
+- `GUIA_RAPIDA_LLM.md` / `guia-rapida-llm.html`: guía rápida enfocada en instalar y usar la skill desde el chat del LLM mediante `/mongodb-vector-skill`.
+- `MANUAL_INSTALACION_CONFIGURACION.md`: manual técnico detallado bajo el framework Diátaxis.
+- `index.html`: documentación técnica interactiva generada a partir de este `README.md`.
 - `SKILL.md`: definición de la skill (v1.7.1) para uso del entorno de agentes.
 
 ## Validación
@@ -538,14 +542,15 @@ Este comando comprueba:
 
 ### Error de conexión a MongoDB
 
+- Verifica que estés **conectado a la VPN corporativa**. Sin la VPN activa, el clúster no permitirá la conexión para obtener ni ingestar documentos.
 - Revisa que `MONGODB_URI` sea válida.
 - Verifica que el cluster esté disponible y que expongas la base de datos correcta.
 - Comprueba el nombre del índice vectorial.
 
 ### Error en consultas a Atlassian (Confluence / Jira)
 
-- Verifica que `ATLASSIAN_USER` tenga el dominio completo registrado en Atlassian (por ejemplo, `.com.mx` en lugar de `.com` si aplica).
-- Si utilizas un **API Token con Scopes** (`Create API token with scopes`), `mcp-server.js` detecta automáticamente el código `401` del dominio directo, resuelve el `cloudId` mediante `/_edge/tenant_info` y enruta las peticiones por `https://api.atlassian.com/ex/{confluence|jira}/{cloudId}`.
+- Verifica que `ATLASSIAN_API_TOKEN` y `ATLASSIAN_DOMAIN` estén configurados en `.env`.
+- Si utilizas un **API Token con Scopes** (`Create API token with scopes`), `mcp-server.js` resuelve automáticamente el `cloudId` mediante `/_edge/tenant_info` y enruta las peticiones con `Authorization: Bearer <ATLASSIAN_API_TOKEN>` por `https://api.atlassian.com/ex/{confluence|jira}/{cloudId}`.
 - Asegúrate de que el token tenga únicamente permisos de lectura (`read:page:confluence`, `read:confluence-content.summary`, `search:confluence`, `read:jira-work`).
 - Las búsquedas y lecturas están restringidas por defecto a **Comercio Unificado** (`CONFLUENCE_ALLOWED_SPACES="CU"` y `JIRA_ALLOWED_PROJECTS="CM,CPI,CUD,CUQ"`).
 
@@ -587,7 +592,9 @@ Esta skill (v1.7.1) combina:
 
 ## Referencias internas
 
+- `GUIA_RAPIDA_LLM.md` / `guia-rapida-llm.html`: guía rápida enfocada en instalar y usar la skill desde el chat del LLM con `/mongodb-vector-skill`.
 - `SKILL.md`: especificación de la skill v1.7.1.
 - `MANUAL_INSTALACION_CONFIGURACION.md`: manual completo de instalación, configuración, formas de uso y recomendaciones bajo el framework Diátaxis.
+- `index.html`: versión HTML interactiva de este `README.md`.
 - `mcp-server.js`: servidor MCP con herramientas de MongoDB Atlas, Confluence y Jira.
 - `ingest.py`: flujo principal de ingesta y embeddings.
