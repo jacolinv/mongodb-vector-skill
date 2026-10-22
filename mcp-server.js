@@ -23,6 +23,37 @@ const ATLASSIAN_DOMAIN_RAW = process.env.ATLASSIAN_DOMAIN || "";
 const ATLASSIAN_USER = process.env.ATLASSIAN_USER || "";
 const ATLASSIAN_API_TOKEN = process.env.ATLASSIAN_API_TOKEN || "";
 
+const CONFLUENCE_ALLOWED_SPACES = (process.env.CONFLUENCE_ALLOWED_SPACES || "CU")
+  .split(",")
+  .map((s) => s.trim().toUpperCase())
+  .filter(Boolean);
+
+const JIRA_ALLOWED_PROJECTS = (process.env.JIRA_ALLOWED_PROJECTS || "CM,CPI,CUD,CUQ")
+  .split(",")
+  .map((p) => p.trim().toUpperCase())
+  .filter(Boolean);
+
+function applyAtlassianScopeFilter(rawQuery, fieldName, allowedList, defaultOrderBy = "") {
+  if (!allowedList || allowedList.length === 0) return rawQuery;
+  const inClause = `${fieldName} IN (${allowedList.map((v) => `"${v}"`).join(", ")})`;
+  const trimmed = (rawQuery || "").trim();
+  if (!trimmed) {
+    return defaultOrderBy ? `${inClause} ${defaultOrderBy}` : inClause;
+  }
+
+  const orderMatch = trimmed.match(/\bORDER\s+BY\b/i);
+  if (orderMatch) {
+    const idx = orderMatch.index;
+    const filterPart = trimmed.slice(0, idx).trim();
+    const orderPart = trimmed.slice(idx).trim();
+    return filterPart
+      ? `${inClause} AND (${filterPart}) ${orderPart}`
+      : `${inClause} ${orderPart}`;
+  }
+
+  return `${inClause} AND (${trimmed})`;
+}
+
 let atlassianDomain = ATLASSIAN_DOMAIN_RAW;
 const domainMatch = atlassianDomain.match(/https?:\/\/([^/]+)/);
 if (domainMatch) atlassianDomain = domainMatch[1];
@@ -72,31 +103,92 @@ function stripHtml(html) {
     .trim();
 }
 
+let cachedCloudId = null;
+let useAtlassianGateway = false;
+
+async function getAtlassianCloudId() {
+  if (cachedCloudId) return cachedCloudId;
+  const res = await fetch(`https://${atlassianDomain}/_edge/tenant_info`);
+  if (!res.ok) return null;
+  const data = await res.json();
+  cachedCloudId = data.cloudId || null;
+  return cachedCloudId;
+}
+
 async function atlassianGet(endpoint, queryParams = {}) {
-  const url = new URL(`https://${atlassianDomain}${endpoint}`);
-  for (const [k, v] of Object.entries(queryParams)) {
-    if (v !== undefined && v !== null) {
-      url.searchParams.set(k, String(v));
+  const buildUrl = (base) => {
+    const url = new URL(`${base}${endpoint}`);
+    for (const [k, v] of Object.entries(queryParams)) {
+      if (v !== undefined && v !== null) {
+        url.searchParams.set(k, String(v));
+      }
+    }
+    return url.toString();
+  };
+
+  const fetchFromGateway = async () => {
+    const cloudId = await getAtlassianCloudId();
+    if (!cloudId) return null;
+    const product = endpoint.startsWith("/wiki") ? "confluence" : "jira";
+    const gatewayBase = `https://api.atlassian.com/ex/${product}/${cloudId}`;
+    return fetch(buildUrl(gatewayBase), {
+      method: "GET",
+      headers: {
+        Authorization: atlassianAuthHeader,
+        Accept: "application/json",
+      },
+    });
+  };
+
+  let response;
+  if (useAtlassianGateway) {
+    response = await fetchFromGateway();
+  } else {
+    response = await fetch(buildUrl(`https://${atlassianDomain}`), {
+      method: "GET",
+      headers: {
+        Authorization: atlassianAuthHeader,
+        Accept: "application/json",
+      },
+    });
+
+    // Fallback automático a api.atlassian.com si se usa un API Token con Scopes
+    if (response.status === 401) {
+      const gwResponse = await fetchFromGateway();
+      if (gwResponse) {
+        useAtlassianGateway = true;
+        response = gwResponse;
+      }
     }
   }
-  const response = await fetch(url.toString(), {
-    method: "GET",
-    headers: {
-      Authorization: atlassianAuthHeader,
-      Accept: "application/json",
-    },
-  });
+
   const text = await response.text();
   if (!response.ok) {
     throw new Error(`Atlassian API Error (${response.status}): ${text}`);
   }
-  return JSON.parse(text);
+  const parsed = JSON.parse(text);
+
+  // Jira en el dominio directo devuelve 200 con issues:[] ante tokens con scopes; verificar por Gateway
+  if (
+    !useAtlassianGateway &&
+    endpoint.startsWith("/rest/api/") &&
+    Array.isArray(parsed.issues) &&
+    parsed.issues.length === 0
+  ) {
+    const gwResponse = await fetchFromGateway();
+    if (gwResponse && gwResponse.ok) {
+      useAtlassianGateway = true;
+      return JSON.parse(await gwResponse.text());
+    }
+  }
+
+  return parsed;
 }
 
 const server = new Server(
   {
     name: "mongodb-vector-mcp",
-    version: "1.7.0",
+    version: "1.7.1",
   },
   {
     capabilities: {
@@ -157,14 +249,14 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
       {
         name: "search_confluence",
         description:
-          "Busca páginas en Confluence utilizando CQL (Confluence Query Language). Ejemplo: text ~ 'arquitectura' AND space = 'CU'",
+          "Busca páginas en Confluence utilizando CQL (restringido automáticamente a los espacios de Comercio Unificado configurados en CONFLUENCE_ALLOWED_SPACES, ej. CU).",
         inputSchema: {
           type: "object",
           properties: {
             cql: {
               type: "string",
               description:
-                "Consulta en formato CQL. Ejemplos: text ~ 'término', space = 'CU' AND type = 'page' ORDER BY lastmodified DESC",
+                "Consulta en formato CQL. Ejemplos: text ~ 'término', type = 'page' ORDER BY lastmodified DESC",
             },
             limit: {
               type: "number",
@@ -178,7 +270,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
       {
         name: "read_confluence_page",
         description:
-          "Lee el contenido completo de una página específica de Confluence dado su ID, devolviéndolo en formato de texto legible.",
+          "Lee el contenido completo de una página específica de Confluence dado su ID (solo páginas dentro de los espacios permitidos de Comercio Unificado).",
         inputSchema: {
           type: "object",
           properties: {
@@ -193,14 +285,14 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
       {
         name: "search_jira_issues",
         description:
-          "Busca tickets (issues) en Jira utilizando JQL (Jira Query Language). Nota: Jira requiere consultas acotadas (ej. updated >= -30d ORDER BY updated DESC o project = 'SP').",
+          "Busca tickets (issues) en Jira utilizando JQL (restringido automáticamente a los proyectos de Comercio Unificado configurados en JIRA_ALLOWED_PROJECTS: CM, CPI, CUD, CUQ).",
         inputSchema: {
           type: "object",
           properties: {
             jql: {
               type: "string",
               description:
-                "Consulta en formato JQL acotada. Ejemplo: updated >= -30d ORDER BY updated DESC o project = 'SP' AND text ~ 'término'",
+                "Consulta en formato JQL. Ejemplo: updated >= -30d ORDER BY updated DESC o text ~ 'término'",
             },
             limit: {
               type: "number",
@@ -214,13 +306,13 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
       {
         name: "read_jira_issue",
         description:
-          "Obtiene el detalle completo de un ticket de Jira (resumen, estado, descripción y comentarios) dada su clave (ej. SP-5809).",
+          "Obtiene el detalle completo de un ticket de Jira dada su clave (restringido a los proyectos de Comercio Unificado: CM, CPI, CUD, CUQ).",
         inputSchema: {
           type: "object",
           properties: {
             issueKey: {
               type: "string",
-              description: "La clave o ID del ticket de Jira (ej. SP-5809)",
+              description: "La clave o ID del ticket de Jira (ej. CM-120, CUD-45)",
             },
           },
           required: ["issueKey"],
@@ -339,19 +431,28 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
   try {
     if (name === "search_confluence") {
-      const cql = args.cql;
+      const cql = applyAtlassianScopeFilter(
+        args.cql || 'type = "page" ORDER BY lastmodified DESC',
+        "space",
+        CONFLUENCE_ALLOWED_SPACES,
+        "ORDER BY lastmodified DESC"
+      );
       const limit = args.limit || 5;
 
       const data = await atlassianGet(`/wiki/rest/api/content/search`, {
         cql,
         limit,
-        expand: "space,history.lastUpdated,version",
+        expand: "space,history,history.lastUpdated,version",
       });
 
       const results = (data.results || []).map((page) => {
+        const versionNum = page.version?.number || 1;
+        const actionType =
+          versionNum === 1 ? "Creado (v1)" : `Modificado (v${versionNum})`;
+        const created = page.history?.createdDate || "N/A";
         const updated =
           page.version?.when || page.history?.lastUpdated?.when || "N/A";
-        return `ID: ${page.id} | Titulo: ${page.title} | Espacio: ${page.space?.name || "N/A"} | Actualizado: ${updated} | Url: https://${atlassianDomain}/wiki${page._links?.webui || ""}`;
+        return `ID: ${page.id} | Titulo: ${page.title} | Espacio: ${page.space?.name || "N/A"} (${page.space?.key || "N/A"}) | Accion: ${actionType} | Creado: ${created} | Actualizado: ${updated} | Url: https://${atlassianDomain}/wiki${page._links?.webui || ""}`;
       });
 
       return {
@@ -361,14 +462,38 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
             text:
               results.length > 0
                 ? results.join("\n")
-                : "No se encontraron resultados en Confluence para la consulta.",
+                : `No se encontraron resultados en Confluence dentro de los espacios permitidos (${CONFLUENCE_ALLOWED_SPACES.join(", ")}).`,
           },
         ],
       };
     }
 
     if (name === "read_confluence_page") {
-      const pageId = args.pageId;
+      const pageId = String(args.pageId).trim();
+
+      if (CONFLUENCE_ALLOWED_SPACES.length > 0) {
+        const checkCql = applyAtlassianScopeFilter(
+          `id = ${pageId}`,
+          "space",
+          CONFLUENCE_ALLOWED_SPACES
+        );
+        const checkData = await atlassianGet(`/wiki/rest/api/content/search`, {
+          cql: checkCql,
+          limit: 1,
+        });
+        if (!checkData.results || checkData.results.length === 0) {
+          return {
+            content: [
+              {
+                type: "text",
+                text: `Acceso restringido: La página ${pageId} no pertenece a los espacios permitidos de Comercio Unificado (${CONFLUENCE_ALLOWED_SPACES.join(", ")}) o no existe.`,
+              },
+            ],
+            isError: true,
+          };
+        }
+      }
+
       const data = await atlassianGet(`/wiki/api/v2/pages/${pageId}`, {
         "body-format": "storage",
       });
@@ -388,20 +513,25 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
     }
 
     if (name === "search_jira_issues") {
-      const jql = args.jql || "updated >= -30d ORDER BY updated DESC";
+      const jql = applyAtlassianScopeFilter(
+        args.jql || "updated >= -30d ORDER BY updated DESC",
+        "project",
+        JIRA_ALLOWED_PROJECTS,
+        "ORDER BY updated DESC"
+      );
       const limit = args.limit || 5;
 
       const data = await atlassianGet(`/rest/api/3/search/jql`, {
         jql,
         maxResults: limit,
-        fields: "summary,status,assignee,issuetype,priority,updated",
+        fields: "summary,status,assignee,issuetype,priority,updated,created,project",
       });
 
       const issues = data.issues || [];
       const results = issues.map((issue) => {
         const f = issue.fields || {};
         return (
-          `Clave: ${issue.key} | Tipo: ${f.issuetype?.name || "N/A"} | Estado: ${f.status?.name || "N/A"} | ` +
+          `Clave: ${issue.key} | Proyecto: ${f.project?.name || "N/A"} (${f.project?.key || "N/A"}) | Tipo: ${f.issuetype?.name || "N/A"} | Estado: ${f.status?.name || "N/A"} | ` +
           `Asignado: ${f.assignee?.displayName || "Sin asignar"} | Actualizado: ${f.updated || "N/A"} | ` +
           `Resumen: ${f.summary || "Sin título"} | Url: https://${atlassianDomain}/browse/${issue.key}`
         );
@@ -414,14 +544,31 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
             text:
               results.length > 0
                 ? results.join("\n")
-                : "No se encontraron tickets en Jira para la consulta.",
+                : `No se encontraron tickets en Jira dentro de los proyectos permitidos de Comercio Unificado (${JIRA_ALLOWED_PROJECTS.join(", ")}).`,
           },
         ],
       };
     }
 
     if (name === "read_jira_issue") {
-      const issueKey = args.issueKey;
+      const issueKey = String(args.issueKey).trim().toUpperCase();
+      const prefix = issueKey.split("-")[0];
+
+      if (
+        JIRA_ALLOWED_PROJECTS.length > 0 &&
+        !JIRA_ALLOWED_PROJECTS.includes(prefix)
+      ) {
+        return {
+          content: [
+            {
+              type: "text",
+              text: `Acceso restringido: El ticket ${issueKey} pertenece al proyecto '${prefix}', fuera de los proyectos permitidos de Comercio Unificado (${JIRA_ALLOWED_PROJECTS.join(", ")}).`,
+            },
+          ],
+          isError: true,
+        };
+      }
+
       const data = await atlassianGet(`/rest/api/3/issue/${issueKey}`, {
         expand: "renderedFields",
       });

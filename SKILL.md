@@ -1,12 +1,12 @@
 ---
 name: mongodb-vector-skill
-version: "1.70"
-description: "Use this skill (v1.70) to ingest Markdown, Office (Word/Excel), PDF, code/configuration, binary/archive metadata, and image knowledge into MongoDB Atlas, perform semantic vector search, and query Atlassian (Confluence & Jira) through the local MCP server. Trigger for MongoDB $vectorSearch, embeddings, Voyage AI, Atlas Search indexes, Confluence/Jira MCP tools, MCP vector retrieval, or validating this workspace."
+version: "1.7.1"
+description: "Use this skill (v1.7.1) to ingest Markdown, Office (Word/Excel), PDF, code/configuration, binary/archive metadata, and image knowledge into MongoDB Atlas, perform semantic vector search, and query Atlassian (Confluence & Jira, scoped to Comercio Unificado) through the local MCP server. Trigger for MongoDB $vectorSearch, embeddings, Voyage AI, Atlas Search indexes, Confluence/Jira MCP tools, MCP vector retrieval, or validating this workspace."
 argument-hint: "Describe the knowledge source, query, Atlassian search, or validation you need."
 user-invocable: true
 ---
 
-# MongoDB Vector Search (v1.70)
+# MongoDB Vector Search (v1.7.1)
 
 ## Purpose
 
@@ -33,7 +33,9 @@ Use this workspace to prepare multimodal and multi-format knowledge, generate em
    - `GOOGLE_CHAT_WEBHOOK_URL` (optional) to trigger final batch upload and replacement summary notifications
    - `ATLASSIAN_DOMAIN` (e.g. `https://liverpooldigital.atlassian.net`)
    - `ATLASSIAN_USER` (Atlassian account email)
-   - `ATLASSIAN_API_TOKEN` (Atlassian API token for Confluence & Jira)
+   - `ATLASSIAN_API_TOKEN` (Atlassian API token — supports both classic and read-only Scoped API tokens via `api.atlassian.com` Gateway)
+   - `CONFLUENCE_ALLOWED_SPACES` (defaults to `CU` — Comercio Unificado)
+   - `JIRA_ALLOWED_PROJECTS` (defaults to `CM,CPI,CUD,CUQ` — Comercio Unificado projects)
 4. Create an Atlas Vector Search index whose `path`, dimensions, and similarity metric match the generated embeddings. The default embedding dimension in `embeddings.py` is `1024`.
 
 ## Procedure
