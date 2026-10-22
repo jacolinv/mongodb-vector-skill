@@ -58,7 +58,10 @@ let atlassianDomain = ATLASSIAN_DOMAIN_RAW;
 const domainMatch = atlassianDomain.match(/https?:\/\/([^/]+)/);
 if (domainMatch) atlassianDomain = domainMatch[1];
 
-const atlassianAuthHeader = `Basic ${Buffer.from(`${ATLASSIAN_USER}:${ATLASSIAN_API_TOKEN}`).toString("base64")}`;
+const atlassianBasicHeader = ATLASSIAN_USER
+  ? `Basic ${Buffer.from(`${ATLASSIAN_USER}:${ATLASSIAN_API_TOKEN}`).toString("base64")}`
+  : null;
+const atlassianBearerHeader = `Bearer ${ATLASSIAN_API_TOKEN}`;
 
 function stripHtml(html) {
   if (!html) return "";
@@ -104,7 +107,8 @@ function stripHtml(html) {
 }
 
 let cachedCloudId = null;
-let useAtlassianGateway = false;
+let useAtlassianGateway = !atlassianBasicHeader;
+let activeAuthHeader = atlassianBasicHeader || atlassianBearerHeader;
 
 async function getAtlassianCloudId() {
   if (cachedCloudId) return cachedCloudId;
@@ -126,7 +130,7 @@ async function atlassianGet(endpoint, queryParams = {}) {
     return url.toString();
   };
 
-  const fetchFromGateway = async () => {
+  const fetchFromGateway = async (authHeader = activeAuthHeader) => {
     const cloudId = await getAtlassianCloudId();
     if (!cloudId) return null;
     const product = endpoint.startsWith("/wiki") ? "confluence" : "jira";
@@ -134,7 +138,7 @@ async function atlassianGet(endpoint, queryParams = {}) {
     return fetch(buildUrl(gatewayBase), {
       method: "GET",
       headers: {
-        Authorization: atlassianAuthHeader,
+        Authorization: authHeader,
         Accept: "application/json",
       },
     });
@@ -142,19 +146,32 @@ async function atlassianGet(endpoint, queryParams = {}) {
 
   let response;
   if (useAtlassianGateway) {
-    response = await fetchFromGateway();
+    response = await fetchFromGateway(activeAuthHeader);
+    if ((response.status === 401 || response.status === 403) && activeAuthHeader !== atlassianBearerHeader) {
+      const bearerRes = await fetchFromGateway(atlassianBearerHeader);
+      if (bearerRes && bearerRes.ok) {
+        activeAuthHeader = atlassianBearerHeader;
+        response = bearerRes;
+      }
+    }
   } else {
     response = await fetch(buildUrl(`https://${atlassianDomain}`), {
       method: "GET",
       headers: {
-        Authorization: atlassianAuthHeader,
+        Authorization: activeAuthHeader,
         Accept: "application/json",
       },
     });
 
-    // Fallback automático a api.atlassian.com si se usa un API Token con Scopes
-    if (response.status === 401) {
-      const gwResponse = await fetchFromGateway();
+    // Fallback automático a api.atlassian.com si se usa un API Token con Scopes o sin ATLASSIAN_USER
+    if (response.status === 401 || response.status === 403) {
+      let gwResponse = await fetchFromGateway(activeAuthHeader);
+      if (gwResponse && (gwResponse.status === 401 || gwResponse.status === 403) && activeAuthHeader !== atlassianBearerHeader) {
+        gwResponse = await fetchFromGateway(atlassianBearerHeader);
+        if (gwResponse && gwResponse.ok) {
+          activeAuthHeader = atlassianBearerHeader;
+        }
+      }
       if (gwResponse) {
         useAtlassianGateway = true;
         response = gwResponse;
@@ -175,7 +192,13 @@ async function atlassianGet(endpoint, queryParams = {}) {
     Array.isArray(parsed.issues) &&
     parsed.issues.length === 0
   ) {
-    const gwResponse = await fetchFromGateway();
+    let gwResponse = await fetchFromGateway(activeAuthHeader);
+    if (gwResponse && !gwResponse.ok && activeAuthHeader !== atlassianBearerHeader) {
+      gwResponse = await fetchFromGateway(atlassianBearerHeader);
+      if (gwResponse && gwResponse.ok) {
+        activeAuthHeader = atlassianBearerHeader;
+      }
+    }
     if (gwResponse && gwResponse.ok) {
       useAtlassianGateway = true;
       return JSON.parse(await gwResponse.text());

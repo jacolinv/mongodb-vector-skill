@@ -285,14 +285,16 @@ Una vez reiniciado tu cliente MCP, solicita a tu agente cualquiera de estas acci
 | `EMBED_BATCH_SIZE` | No | `8` | `ingest.py` | Cantidad de bloques enviados por lote a la API de Voyage AI. |
 | `GOOGLE_CHAT_WEBHOOK_URL` | No | `""` | `ingest.py` | URL del Webhook de Google Chat para la notificación consolidada de fin de ingesta. |
 | `ATLASSIAN_DOMAIN` | No* | `""` | `mcp-server.js` | Dominio de Atlassian Cloud (*Requerido para herramientas de Confluence/Jira). |
-| `ATLASSIAN_USER` | No* | `""` | `mcp-server.js` | Correo de la cuenta Atlassian (*Requerido para herramientas de Confluence/Jira). |
-| `ATLASSIAN_API_TOKEN` | No* | `""` | `mcp-server.js` | API Token de Atlassian (*Requerido para herramientas de Confluence/Jira). |
+| `ATLASSIAN_USER` | No | `""` | `mcp-server.js` | Correo de la cuenta Atlassian (Opcional al usar Scoped API Tokens con `Bearer`). |
+| `ATLASSIAN_API_TOKEN` | No* | `""` | `mcp-server.js` | API Token de Atlassian (*Requerido para Confluence/Jira; soporta `Bearer` y `Basic`). |
+| `CONFLUENCE_ALLOWED_SPACES` | No | `"CU"` | `mcp-server.js` | Claves de espacios permitidos en Confluence (Comercio Unificado). |
+| `JIRA_ALLOWED_PROJECTS` | No | `"CM,CPI,CUD,CUQ"` | `mcp-server.js` | Claves de proyectos permitidos en Jira (Comercio Unificado). |
 
 ---
 
 ### 3.2 Especificación de Herramientas del Servidor MCP (`mcp-server.js`)
 
-El servidor `mongodb-vector-mcp` (`v1.7.0`) expone **6 herramientas** a través del protocolo MCP:
+El servidor `mongodb-vector-mcp` (`v1.7.1`) expone **6 herramientas** a través del protocolo MCP:
 
 #### 1. `mongodb_vector_search`
 Ejecuta el pipeline de agregación `$vectorSearch` en MongoDB Atlas.
