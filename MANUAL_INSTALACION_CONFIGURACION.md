@@ -2,6 +2,7 @@
 
 > **Marco Documental Diátaxis**
 > Este manual está estructurado siguiendo los principios del framework **Diátaxis** para cubrir las cuatro necesidades del usuario:
+>
 > 1. **Guías Prácticas (How-To Guides)**: Pasos exactos de instalación, configuración de `.env`, creación del índice en MongoDB Atlas e integración MCP.
 > 2. **Tutorial (Learning-Oriented)**: Verificación de extremo a extremo desde la validación estática hasta la primera consulta vectorial y de Atlassian.
 > 3. **Referencia Técnica (Reference)**: Diccionario exhaustivo de variables de entorno, parámetros de herramientas MCP, extensiones soportadas y modelos de embeddings.
@@ -248,6 +249,7 @@ python3 ingest.py /ruta/a/documentos --version "1.7.0"
 ```
 
 **¿Qué ocurre durante este paso?**
+
 1. `ingest.py` escanea recursivamente todos los archivos soportados.
 2. Calcula el hash `MD5` de cada archivo y consulta MongoDB Atlas para evitar reprocesar archivos sin cambios.
 3. Si el archivo ya existe con el mismo `checksum` pero diferente versión, actualiza únicamente el metadato `version`.
@@ -285,18 +287,15 @@ Una vez reiniciado tu cliente MCP, solicita a tu agente cualquiera de estas acci
 | `EMBED_BATCH_SIZE` | No | `8` | `ingest.py` | Cantidad de bloques enviados por lote a la API de Voyage AI. |
 | `GOOGLE_CHAT_WEBHOOK_URL` | No | `""` | `ingest.py` | URL del Webhook de Google Chat para la notificación consolidada de fin de ingesta. |
 | `ATLASSIAN_DOMAIN` | No* | `""` | `mcp-server.js` | Dominio de Atlassian Cloud (*Requerido para herramientas de Confluence/Jira). |
-| `ATLASSIAN_USER` | No | `""` | `mcp-server.js` | Correo de la cuenta Atlassian (Opcional al usar Scoped API Tokens con `Bearer`). |
-| `ATLASSIAN_API_TOKEN` | No* | `""` | `mcp-server.js` | API Token de Atlassian (*Requerido para Confluence/Jira; soporta `Bearer` y `Basic`). |
-| `CONFLUENCE_ALLOWED_SPACES` | No | `"CU"` | `mcp-server.js` | Claves de espacios permitidos en Confluence (Comercio Unificado). |
-| `JIRA_ALLOWED_PROJECTS` | No | `"CM,CPI,CUD,CUQ"` | `mcp-server.js` | Claves de proyectos permitidos en Jira (Comercio Unificado). |
+| `ATLASSIAN_USER` | No* | `""` | `mcp-server.js` | Correo de la cuenta Atlassian (*Requerido para herramientas de Confluence/Jira). |
+| `ATLASSIAN_API_TOKEN` | No* | `""` | `mcp-server.js` | API Token de Atlassian (*Requerido para herramientas de Confluence/Jira). |
 
 ---
 
 ### 3.2 Especificación de Herramientas del Servidor MCP (`mcp-server.js`)
 
-El servidor `mongodb-vector-mcp` (`v1.7.1`) expone **6 herramientas** a través del protocolo MCP:
-
 #### 1. `mongodb_vector_search`
+
 Ejecuta el pipeline de agregación `$vectorSearch` en MongoDB Atlas.
 
 | Parámetro | Tipo | Requerido | Por Defecto | Descripción |
@@ -307,6 +306,7 @@ Ejecuta el pipeline de agregación `$vectorSearch` en MongoDB Atlas.
 | `path` | `string` | No | `"embedding"` | Campo del documento donde reside el vector. |
 
 #### 2. `find_by_document_id`
+
 Realiza una búsqueda exacta (`collection.find({ documentId })`) sobre MongoDB Atlas.
 
 | Parámetro | Tipo | Requerido | Por Defecto | Descripción |
@@ -314,6 +314,7 @@ Realiza una búsqueda exacta (`collection.find({ documentId })`) sobre MongoDB A
 | `documentId` | `string` | **Sí** | — | Nombre o identificador del documento (ej. `"normativa_mongodb.pdf"`). |
 
 #### 3. `search_confluence`
+
 Busca páginas en Confluence mediante el endpoint `/wiki/rest/api/content/search`.
 
 | Parámetro | Tipo | Requerido | Por Defecto | Descripción |
@@ -322,6 +323,7 @@ Busca páginas en Confluence mediante el endpoint `/wiki/rest/api/content/search
 | `limit` | `number` | No | `10` | Número máximo de páginas a devolver. |
 
 #### 4. `read_confluence_page`
+
 Recupera el título, espacio, URL y contenido textual limpio (`body.storage`) de una página de Confluence por su ID (`/wiki/rest/api/content/{pageId}`).
 
 | Parámetro | Tipo | Requerido | Por Defecto | Descripción |
@@ -329,6 +331,7 @@ Recupera el título, espacio, URL y contenido textual limpio (`body.storage`) de
 | `pageId` | `string` | **Sí** | — | Identificador numérico de la página en Confluence (ej. `"2823684097"`). |
 
 #### 5. `search_jira_issues`
+
 Busca tickets en Jira Cloud usando el endpoint `/rest/api/3/search/jql`.
 
 | Parámetro | Tipo | Requerido | Por Defecto | Descripción |
@@ -337,6 +340,7 @@ Busca tickets en Jira Cloud usando el endpoint `/rest/api/3/search/jql`.
 | `maxResults` | `number` | No | `10` | Cantidad máxima de tickets a retornar. |
 
 #### 6. `read_jira_issue`
+
 Obtiene el resumen, estado, prioridad, asignado, descripción y últimos 10 comentarios de un ticket de Jira (`/rest/api/3/issue/{issueKey}`).
 
 | Parámetro | Tipo | Requerido | Por Defecto | Descripción |
@@ -405,12 +409,14 @@ Cada chunk insertado en la colección `knowledgeVectors.knowledge` cumple con la
 ### 4.1 Separación de Responsabilidades: Ingesta Python vs. Servidor MCP Node.js
 
 La arquitectura de `mongodb-vector-skill` separa deliberadamente el **procesamiento pesado de ingesta** (Python) de la **exposición de herramientas en tiempo real** (Node.js):
+
 - **Python (`ingest.py`, `loaders.py`, `embeddings.py`)** aprovecha el ecosistema nativo de procesamiento documental y visión por computadora (`PyMuPDF`, `Pillow`, `python-docx`, `openpyxl`, SDK oficial `voyageai`) para transformar decenas de miles de archivos heterogéneos en vectores de `1024` dimensiones.
 - **Node.js (`mcp-server.js`)** proporciona un proceso ultraligero de arranque instantáneo sobre el SDK oficial `@modelcontextprotocol/sdk`, manteniendo conexiones persistentes a MongoDB Atlas y ejecutando peticiones REST asíncronas hacia Confluence y Jira con latencia mínima.
 
 ### 4.2 Idempotencia por Checksum MD5 y Etiquetado de Versiones
 
 Al procesar repositorios masivos (como los `26,485` archivos de `enactor-kb`), interrumpir y reanudar una ingesta no debe duplicar documentos ni consumir cuota innecesaria en la API de Voyage AI:
+
 1. Antes de generar cualquier embedding, `ingest.py` calcula el hash `MD5` del archivo local y lo compara contra el campo `checksum` almacenado en MongoDB Atlas.
 2. Si el `checksum` coincide y no hay cambio de versión, el archivo se omite en milisegundos (`SIN CAMBIOS`).
 3. Si el `checksum` coincide pero se especificó una nueva versión (`--version "2.7.1784.105"`), `mongodb.py` ejecuta `update_many` solo sobre el campo `version`, sin volver a llamar a Voyage AI.
@@ -419,6 +425,7 @@ Al procesar repositorios masivos (como los `26,485` archivos de `enactor-kb`), i
 ### 4.3 Pureza del Canal `stdio` en el Protocolo MCP
 
 El protocolo **Model Context Protocol (MCP)** sobre transporte `stdio` utiliza `stdout` exclusivamente para tramas JSON-RPC 2.0 entre el cliente de IA y `mcp-server.js`. Cualquier byte escrito en `stdout` que no sea un objeto JSON-RPC válido (como banners de librerías o logs de depuración) rompe la comunicación con el agente. Por ello:
+
 - `dotenv` se inicializa con `{ quiet: true }`.
 - Todos los mensajes diagnósticos del servidor se escriben únicamente en `stderr` (`console.error`).
 
@@ -444,16 +451,19 @@ La skill `v1.7.0` puede operarse en cuatro modalidades complementarias según la
 A continuación se presentan plantillas de prompts probadas para aprovechar al máximo las capacidades de la versión `1.7.0`:
 
 #### A. Búsqueda Semántica y RAG sobre Conocimiento Ingerido (`mongodb_vector_search`)
+
 - **Exploración funcional y técnica**:
   > *"/mongodb-vector-skill Busca en la base de conocimiento vectorial cómo funciona el flujo de Catálogo Extendido en el POS Enactor, incluyendo procesos, reglas, APIs y mapeos."*
 - **Localización de procesos o configuraciones**:
   > *"Genera un embedding de consulta y usa `mongodb_vector_search` con `limit: 10` y `numCandidates: 100` para encontrar todos los fragmentos relacionados con la anulación de transacciones (`Void Transaction`)."*
 
 #### B. Recuperación Exacta de un Documento Completo (`find_by_document_id`)
+
 - **Inspección de todos los fragmentos de un archivo conocido**:
   > *"Usa `find_by_document_id` para recuperar todos los chunks del documento `Catalogo Extendido-Flujo de Venta POS Enactor.pdf` ordenados por página."*
 
 #### C. Consultas a Confluence y Jira (`search_confluence`, `read_confluence_page`, `search_jira_issues`, `read_jira_issue`)
+
 - **Monitoreo de actividad reciente (últimos 15 días)**:
   > *"Consulta en Confluence y Jira todos los documentos y tickets actualizados en los últimos 15 días y preséntame un resumen ejecutivo agrupado por plataforma."*
 - **Lectura íntegra de normativas o diseños en Confluence**:
@@ -462,6 +472,7 @@ A continuación se presentan plantillas de prompts probadas para aprovechar al m
   > *"Lee el ticket `POS-123` con `read_jira_issue`, resume su descripción y los últimos comentarios."*
 
 #### D. Flujo Híbrido (Auditoría Cruzada Atlassian + MongoDB Atlas)
+
 - **Verificación de cumplimiento normativo**:
   > *"Lee la página de Confluence con la Normativa de MongoDB (`pageId: 2823684097`) y revisa si el esquema actual de nuestra colección `knowledgeVectors.knowledge` cumple con las reglas de nomenclatura, tipos de datos e indexación."*
 - **Diagnóstico de bugs con contexto de Jira + Base Vectorial**:
@@ -521,5 +532,3 @@ El operador `$vectorSearch` de MongoDB Atlas utiliza búsqueda aproximada de vec
 3. **Principio de Menor Privilegio**:
    - El usuario configurado en `MONGODB_URI` para las aplicaciones/MCP debe contar únicamente con permisos `readWrite` (para ingesta) o `read` (para solo consulta en el servidor MCP) sobre la base de datos `knowledgeVectors`, evitando roles administrativos (`dbAdmin` / `userAdmin`) en producción.
    - El token `ATLASSIAN_API_TOKEN` debe pertenecer a una cuenta cuyos permisos de lectura en Confluence y Jira estén acotados a los espacios y proyectos requeridos.
-
-

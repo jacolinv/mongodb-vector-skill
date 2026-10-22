@@ -126,6 +126,84 @@
             padding: 4px 10px; border-radius: 20px; font-size: 0.8rem; font-weight: 600;
             vertical-align: middle; margin-left: 15px; border: 1px solid rgba(0, 237, 100, 0.2); letter-spacing: normal;
         }
+
+        .nav-switch {
+            margin-bottom: 28px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+        }
+
+        .nav-switch-link {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 14px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 0.88rem;
+            font-weight: 600;
+            color: var(--text-main);
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.07);
+            margin-bottom: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .nav-switch-link:hover {
+            border-color: var(--accent);
+            color: #fff;
+            background: rgba(56, 189, 248, 0.08);
+            transform: translateX(3px);
+        }
+
+        .nav-switch-link.current {
+            background: rgba(0, 237, 100, 0.1);
+            border-color: rgba(0, 237, 100, 0.35);
+            color: var(--primary);
+        }
+
+        .top-nav-banner {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 15px;
+            background: var(--surface-color);
+            border: 1px solid rgba(0, 237, 100, 0.3);
+            border-radius: 12px;
+            padding: 14px 20px;
+            margin-bottom: 35px;
+            box-shadow: 0 10px 25px -10px rgba(0,0,0,0.4);
+        }
+
+        .top-nav-banner .banner-text {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.92rem;
+            color: var(--text-main);
+        }
+
+        .top-nav-banner .banner-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(0, 237, 100, 0.14);
+            color: var(--primary);
+            border: 1px solid rgba(0, 237, 100, 0.4);
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 0.88rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+
+        .top-nav-banner .banner-btn:hover {
+            background: var(--primary);
+            color: #0b0f19;
+            transform: translateY(-2px);
+        }
     </style>
 
 </head>
@@ -133,6 +211,16 @@
 
 <div class="layout">
     <aside class="sidebar">
+        <div class="nav-switch">
+            <div class="toc-title"><i class="fas fa-compass"></i> Navegación</div>
+            <a href="index.html" class="nav-switch-link current">
+                <i class="fas fa-book"></i> Documentación Técnica
+            </a>
+            <a href="guia-rapida-llm.html" class="nav-switch-link">
+                <i class="fas fa-comments"></i> Guía Rápida (Chat LLM)
+            </a>
+        </div>
+
         <div class="toc-title"><i class="fas fa-list-ul"></i> Contenido</div>
         <ul class="toc-list">
   <li><a href="#section-0" class="toc-h2">Propósito</a></li>
@@ -170,9 +258,19 @@
     </aside>
 
     <main class="main-content">
+        <div class="top-nav-banner fade-in-up visible">
+            <div class="banner-text">
+                <i class="fas fa-comments" style="color: var(--primary); font-size: 1.2rem;"></i>
+                <span>¿Quieres instalar y usar la skill directamente pidiéndoselo a tu LLM en el chat?</span>
+            </div>
+            <a href="guia-rapida-llm.html" class="banner-btn">
+                <i class="fas fa-bolt"></i> Ir a la Guía Rápida para el Chat del LLM
+            </a>
+        </div>
+
         <div class="markdown-body">
-            <h1>MongoDB Vector Search Skill<span class="version-badge">v1.6.0</span></h1>
-<p class="fade-in-up">Una skill para preparar conocimiento multimodal, generar embeddings con Voyage AI, almacenarlos en MongoDB Atlas y recuperarlos con búsqueda vectorial mediante un servidor MCP local.</p>
+            <h1>MongoDB Vector Search Skill<span class="version-badge">v1.7.1</span></h1>
+<p class="fade-in-up">Una skill para preparar conocimiento multimodal, generar embeddings con Voyage AI, almacenarlos en MongoDB Atlas, consultar Atlassian (Confluence y Jira de Comercio Unificado) y recuperarlos con búsqueda vectorial mediante un servidor MCP local.</p>
 <h2 class="fade-in-up" id="section-0">Propósito</h2>
 <p class="fade-in-up">Este proyecto permite:</p>
 <ul class="fade-in-up">
@@ -181,7 +279,8 @@
 <li>Generar embeddings con Voyage AI.</li>
 <li>Guardar los documentos y sus vectores en MongoDB Atlas.</li>
 <li>Notificar automáticamente a Google Chat (Webhook) las subidas y los reemplazos de documentos.</li>
-<li>Ejecutar una búsqueda vectorial a través del tool <code>mongodb_vector_search</code> expuesto por <code>mcp-server.js</code>.</li>
+<li>Ejecutar una búsqueda vectorial a través del tool <code>search_knowledge</code> / <code>mongodb_vector_search</code> expuesto por <code>mcp-server.js</code>.</li>
+<li>Consultar Confluence (espacio <code>CU</code>) y Jira (proyectos <code>CM, CPI, CUD, CUQ</code>) de <strong>Comercio Unificado</strong> usando autenticación <code>Bearer</code> (solo <code>ATLASSIAN_API_TOKEN</code>) o <code>Basic</code>.</li>
 </ul>
 <p class="fade-in-up">La idea principal es soportar un flujo de Retrieval-Augmented Generation (RAG) o búsqueda semántica sobre documentos locales.</p>
 
@@ -199,10 +298,11 @@
 <h2 class="fade-in-up" id="section-2">Requisitos</h2>
 <p class="fade-in-up">Antes de usar la skill debes tener:</p>
 <ul class="fade-in-up">
+<li><strong>Conexión activa a la VPN corporativa:</strong> Indispensable para conectarse, obtener información e ingestar documentos en la bóveda de conocimiento de MongoDB Atlas.</li>
 <li>Node.js y npm instalados.</li>
 <li>Python 3 disponible en el entorno activo.</li>
 <li>Una instancia de MongoDB Atlas con soporte a Atlas Vector Search.</li>
-<li>Una API key válida de Voyage AI.</li>
+<li>Una API key válida de Voyage AI y un API Token de Atlassian (<code>ATLASSIAN_API_TOKEN</code>).</li>
 <li>Un archivo <code>.env</code> con las variables necesarias.</li>
 </ul>
 <h2 class="fade-in-up" id="section-3">Instalación</h2>
@@ -486,12 +586,22 @@ print(len(query_vector))
 </ul>
 <h2 class="fade-in-up" id="section-30">Siguiente paso recomendado</h2>
 <ol>
-<li>Configura <code>.env</code> con tus credenciales reales.</li>
+<li>Configura <code>.env</code> con tus credenciales reales (o usa la <a href="guia-rapida-llm.html" style="color: var(--primary); font-weight: 600;">Guía Rápida desde el Chat del LLM</a>).</li>
 <li>Define el índice vectorial en Atlas.</li>
 <li>Añade una carpeta de documentos de prueba.</li>
 <li>Ejecuta <code>python3 ingest.py</code>.</li>
-<li>Inicia el MCP server y prueba <code>mongodb_vector_search</code> con un embedding de consulta real.</li>
+<li>Inicia el MCP server y prueba las herramientas de MongoDB, Confluence (<code>CU</code>) y Jira (<code>CM, CPI, CUD, CUQ</code>).</li>
 </ol>
+
+            <div class="top-nav-banner fade-in-up" style="margin-top: 50px;">
+                <div class="banner-text">
+                    <i class="fas fa-robot" style="color: var(--accent); font-size: 1.2rem;"></i>
+                    <span>Consulta los prompts listos para copiar y pegar en tu LLM (instalación y ejemplos de uso).</span>
+                </div>
+                <a href="guia-rapida-llm.html" class="banner-btn">
+                    <i class="fas fa-arrow-right"></i> Abrir Guía Rápida para el Chat del LLM (guia-rapida-llm.html)
+                </a>
+            </div>
         </div>
     </main>
 </div>

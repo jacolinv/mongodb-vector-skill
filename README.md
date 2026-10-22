@@ -74,8 +74,7 @@ GOOGLE_CHAT_WEBHOOK_URL="https://chat.googleapis.com/..."
 
 # Configuración de Atlassian (Confluence & Jira — Comercio Unificado)
 ATLASSIAN_DOMAIN="https://tu-dominio.atlassian.net"
-# ATLASSIAN_USER es opcional si utilizas un Scoped API Token (conexión Bearer vía Gateway)
-# ATLASSIAN_USER="usuario@empresa.com.mx"
+ATLASSIAN_USER="usuario@empresa.com.mx"
 ATLASSIAN_API_TOKEN="<tu_atlassian_api_token>"
 CONFLUENCE_ALLOWED_SPACES="CU"
 JIRA_ALLOWED_PROJECTS="CM,CPI,CUD,CUQ"
@@ -99,8 +98,8 @@ Estas son las variables que usa el proyecto:
 - `GOOGLE_CHAT_WEBHOOK_URL`: (Opcional) URL del webhook de Google Chat para enviar la notificación resumen al finalizar la ingesta.
 - `EMBED_BATCH_SIZE`: tamaño del lote para embedding en batch.
 - `ATLASSIAN_DOMAIN`: dominio de Atlassian Cloud (ej. `https://liverpooldigital.atlassian.net`).
-- `ATLASSIAN_USER`: *(Opcional con Scoped API Tokens)* correo electrónico de la cuenta de Atlassian. Si se omite o se comenta, el servidor MCP autentica automáticamente mediante `Authorization: Bearer <ATLASSIAN_API_TOKEN>` a través del Gateway de Atlassian (`api.atlassian.com`).
-- `ATLASSIAN_API_TOKEN`: token de API de Atlassian para autenticar peticiones REST a Confluence y Jira (soporta tanto tokens clásicos con `Basic Auth` como **Scoped API Tokens** de solo lectura con `Bearer Auth` enrutados automáticamente vía `api.atlassian.com/ex/{product}/{cloudId}`).
+- `ATLASSIAN_USER`: correo electrónico de la cuenta de Atlassian.
+- `ATLASSIAN_API_TOKEN`: token de API de Atlassian para autenticar peticiones REST a Confluence y Jira (soporta tanto tokens clásicos como **Scoped API Tokens** de solo lectura enrutados automáticamente vía `api.atlassian.com/ex/{product}/{cloudId}`).
 - `CONFLUENCE_ALLOWED_SPACES`: lista separada por comas de claves de espacios permitidos en Confluence (por defecto `CU` — Comercio Unificado).
 - `JIRA_ALLOWED_PROJECTS`: lista separada por comas de claves de proyectos permitidos en Jira (por defecto `CM,CPI,CUD,CUQ` — proyectos de Comercio Unificado).
 

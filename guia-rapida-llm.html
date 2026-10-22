@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guía Rápida — Instalar y Usar mongodb-vector-skill desde el Chat de tu LLM (v1.7.1)</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.5.0/github-markdown.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-color: #0b0f19;
+            --surface-color: #151b2b;
+            --primary: #00ED64;
+            --secondary: #00684A;
+            --accent: #38bdf8;
+            --warning: #f59e0b;
+            --text-main: #c9d1d9;
+            --text-muted: #8b949e;
+            --border: #30363d;
+        }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            background-image: 
+                radial-gradient(at 0% 0%, hsla(153, 100%, 46%, 0.08) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, hsla(199, 95%, 74%, 0.05) 0px, transparent 50%);
+            background-attachment: fixed;
+            color: var(--text-main);
+            font-family: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+            overflow-x: hidden;
+        }
+
+        ::-webkit-scrollbar { width: 10px; height: 10px; }
+        ::-webkit-scrollbar-track { background: var(--bg-color); }
+        ::-webkit-scrollbar-thumb { background: #2a3143; border-radius: 5px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--border); }
+
+        .layout { display: flex; max-width: 1400px; margin: 0 auto; position: relative; }
+
+        .sidebar {
+            width: 290px;
+            flex-shrink: 0;
+            padding: 40px 20px;
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            overflow-y: auto;
+            box-sizing: border-box;
+            border-right: 1px solid rgba(255,255,255,0.05);
+        }
+
+        @media (max-width: 1024px) { .sidebar { display: none; } }
+
+        .nav-switch {
+            margin-bottom: 28px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+        }
+
+        .nav-switch-link {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 14px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 0.88rem;
+            font-weight: 600;
+            color: var(--text-main);
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.07);
+            margin-bottom: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .nav-switch-link:hover {
+            border-color: var(--accent);
+            color: #fff;
+            background: rgba(56, 189, 248, 0.08);
+            transform: translateX(3px);
+        }
+
+        .nav-switch-link.current {
+            background: rgba(0, 237, 100, 0.1);
+            border-color: rgba(0, 237, 100, 0.35);
+            color: var(--primary);
+        }
+
+        .toc-title {
+            font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em;
+            color: var(--text-muted); font-weight: 700; margin-bottom: 20px;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .toc-list { list-style: none; padding: 0; margin: 0; }
+        .toc-list li { margin-bottom: 8px; }
+        .toc-list a {
+            color: var(--text-muted); text-decoration: none; font-size: 0.9rem;
+            display: block; padding: 6px 12px; border-radius: 6px;
+            transition: all 0.2s ease; border-left: 2px solid transparent;
+        }
+        .toc-list a:hover { color: var(--text-main); background: rgba(255,255,255,0.03); border-left-color: var(--accent); }
+        .toc-list .active { color: var(--primary); background: rgba(0, 237, 100, 0.05); border-left-color: var(--primary); font-weight: 500; }
+        .toc-h3 { padding-left: 25px !important; font-size: 0.84rem !important; }
+
+        .main-content { flex-grow: 1; min-width: 0; padding: 50px 40px 100px 60px; }
+        @media (max-width: 768px) { .main-content { padding: 30px 20px; } }
+
+        .top-nav-banner {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 15px;
+            background: var(--surface-color);
+            border: 1px solid rgba(56, 189, 248, 0.25);
+            border-radius: 12px;
+            padding: 14px 20px;
+            margin-bottom: 35px;
+            box-shadow: 0 10px 25px -10px rgba(0,0,0,0.4);
+        }
+
+        .top-nav-banner .banner-text {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.92rem;
+            color: var(--text-main);
+        }
+
+        .top-nav-banner .banner-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(0, 237, 100, 0.12);
+            color: var(--primary);
+            border: 1px solid rgba(0, 237, 100, 0.35);
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 0.88rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+
+        .top-nav-banner .banner-btn:hover {
+            background: var(--primary);
+            color: #0b0f19;
+            transform: translateY(-2px);
+        }
+
+        .vpn-alert {
+            display: flex;
+            align-items: flex-start;
+            gap: 14px;
+            background: rgba(245, 158, 11, 0.08);
+            border: 1px solid rgba(245, 158, 11, 0.4);
+            border-left: 4px solid var(--warning);
+            border-radius: 10px;
+            padding: 16px 20px;
+            margin: 18px 0;
+            color: var(--text-main);
+        }
+
+        .vpn-alert i {
+            color: var(--warning);
+            font-size: 1.35rem;
+            margin-top: 2px;
+        }
+
+        .skill-alert {
+            display: flex;
+            align-items: flex-start;
+            gap: 14px;
+            background: rgba(0, 237, 100, 0.07);
+            border: 1px solid rgba(0, 237, 100, 0.35);
+            border-left: 4px solid var(--primary);
+            border-radius: 10px;
+            padding: 16px 20px;
+            margin: 18px 0;
+            color: var(--text-main);
+        }
+
+        .skill-alert i {
+            color: var(--primary);
+            font-size: 1.35rem;
+            margin-top: 2px;
+        }
+
+        .markdown-body { background: transparent !important; font-family: inherit; color: var(--text-main); }
+        
+        .markdown-body h1 {
+            border-bottom: none; font-size: 2.5em; font-weight: 800;
+            background: linear-gradient(to right, #00ED64, #38bdf8);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            margin-bottom: 20px; letter-spacing: -0.02em;
+        }
+        .markdown-body h2 { border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px; margin-top: 50px; color: #fff; font-weight: 600; scroll-margin-top: 80px; }
+        .markdown-body h3 { color: #e2e8f0; margin-top: 32px; scroll-margin-top: 80px; }
+        .markdown-body h4 { color: var(--accent); margin-top: 24px; font-weight: 600; }
+
+        .markdown-body pre {
+            background-color: var(--surface-color); border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 12px; box-shadow: 0 10px 30px -10px rgba(0,0,0,0.5); padding: 20px;
+            position: relative;
+        }
+        .markdown-body pre code { font-family: "JetBrains Mono", monospace; font-size: 0.9em; color: #e2e8f0; white-space: pre-wrap; word-break: break-word; }
+        .markdown-body code { background-color: rgba(255,255,255,0.08); color: #38bdf8; border-radius: 4px; padding: 0.2em 0.4em; }
+
+        .markdown-body blockquote {
+            background: rgba(56, 189, 248, 0.05); border-left: 4px solid var(--accent);
+            border-radius: 0 8px 8px 0; padding: 15px 20px; color: var(--text-main);
+        }
+
+        .prompt-card {
+            background: var(--surface-color);
+            border: 1px solid rgba(0, 237, 100, 0.22);
+            border-radius: 12px;
+            padding: 16px 20px;
+            margin: 14px 0;
+            position: relative;
+            box-shadow: 0 10px 30px -10px rgba(0,0,0,0.45);
+        }
+
+        .prompt-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--primary);
+            font-weight: 700;
+        }
+
+        .copy-btn {
+            background: rgba(255,255,255,0.06);
+            color: var(--text-main);
+            border: 1px solid rgba(255,255,255,0.12);
+            border-radius: 6px;
+            padding: 5px 12px;
+            font-size: 0.78rem;
+            font-family: inherit;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s ease;
+        }
+
+        .copy-btn:hover {
+            background: var(--primary);
+            color: #0b0f19;
+            border-color: var(--primary);
+            font-weight: 600;
+        }
+
+        .prompt-text {
+            font-family: "JetBrains Mono", monospace;
+            font-size: 0.9rem;
+            line-height: 1.55;
+            color: #f0f6fc;
+            margin: 0;
+            white-space: pre-wrap;
+        }
+
+        .badge-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin: 12px 0 20px 0;
+        }
+
+        .scope-badge {
+            background: rgba(56, 189, 248, 0.1);
+            color: var(--accent);
+            border: 1px solid rgba(56, 189, 248, 0.25);
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-size: 0.82rem;
+            font-weight: 600;
+        }
+
+        .fade-in-up { opacity: 0; transform: translateY(20px); transition: opacity 0.6s ease-out, transform 0.6s ease-out; }
+        .fade-in-up.visible { opacity: 1; transform: translateY(0); }
+
+        #btt {
+            position: fixed; bottom: 30px; right: 30px; width: 50px; height: 50px; border-radius: 50%;
+            background: var(--surface-color); color: var(--primary); border: 1px solid rgba(0, 237, 100, 0.3);
+            display: flex; align-items: center; justify-content: center; font-size: 20px; cursor: pointer;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3); opacity: 0; visibility: hidden; transition: all 0.3s ease; z-index: 99;
+        }
+        #btt.show { opacity: 1; visibility: visible; }
+        #btt:hover { background: var(--primary); color: #000; transform: translateY(-3px); box-shadow: 0 15px 25px rgba(0, 237, 100, 0.4); }
+        
+        .version-badge {
+            display: inline-block; background: rgba(0, 237, 100, 0.1); color: var(--primary);
+            padding: 4px 10px; border-radius: 20px; font-size: 0.8rem; font-weight: 600;
+            vertical-align: middle; margin-left: 15px; border: 1px solid rgba(0, 237, 100, 0.2); letter-spacing: normal;
+        }
+    </style>
+</head>
+<body data-color-mode="dark" data-dark-theme="dark">
+
+<div class="layout">
+    <aside class="sidebar">
+        <div class="nav-switch">
+            <div class="toc-title"><i class="fas fa-compass"></i> Navegación</div>
+            <a href="index.html" class="nav-switch-link">
+                <i class="fas fa-book"></i> Documentación Técnica
+            </a>
+            <a href="guia-rapida-llm.html" class="nav-switch-link current">
+                <i class="fas fa-comments"></i> Guía Rápida (Chat LLM)
+            </a>
+        </div>
+
+        <div class="toc-title"><i class="fas fa-list-ul"></i> En esta guía</div>
+        <ul class="toc-list">
+            <li><a href="#parte-1" class="toc-h2">Parte 1: Instalación desde el Chat</a></li>
+            <li><a href="#paso-1" class="toc-h3">Paso 1: Instalar desde GitHub</a></li>
+            <li><a href="#paso-2" class="toc-h3">Paso 2: Entregar el archivo .env</a></li>
+            <li><a href="#paso-3" class="toc-h3">Paso 3: Validar la conexión</a></li>
+            <li><a href="#parte-2" class="toc-h2">Parte 2: Ejemplos de Uso en el Chat</a></li>
+            <li><a href="#uso-mongodb" class="toc-h3">1. Bóveda de MongoDB (VPN)</a></li>
+            <li><a href="#uso-confluence" class="toc-h3">2. Confluence (Espacio CU)</a></li>
+            <li><a href="#uso-jira" class="toc-h3">3. Jira (CM, CPI, CUD, CUQ)</a></li>
+            <li><a href="#uso-combinado" class="toc-h3">4. Consultas Combinadas</a></li>
+            <li><a href="#troubleshooting" class="toc-h2">Solución Rápida de Problemas</a></li>
+        </ul>
+    </aside>
+
+    <main class="main-content">
+        <div class="top-nav-banner fade-in-up visible">
+            <div class="banner-text">
+                <i class="fas fa-robot" style="color: var(--accent); font-size: 1.2rem;"></i>
+                <span>Estás viendo la <strong>Guía Rápida — Instalar y Usar mongodb-vector-skill desde el Chat de tu LLM</strong>.</span>
+            </div>
+            <a href="index.html" class="banner-btn">
+                <i class="fas fa-arrow-left"></i> Ir a Documentación Técnica Principal (index.html)
+            </a>
+        </div>
+
+        <div class="markdown-body">
+            <h1>Guía Rápida — Instalar y Usar <code>mongodb-vector-skill</code> desde el Chat de tu LLM<span class="version-badge">v1.7.1</span></h1>
+            <p class="fade-in-up">Esta guía está diseñada para que <strong>no tengas que ejecutar comandos manuales en la terminal</strong>. Todo el proceso de instalación, configuración y consulta se realiza <strong>conversando directamente con tu agente LLM</strong> (Antigravity, Claude Code, Cursor, Windsurf, etc.).</p>
+
+            <div class="vpn-alert fade-in-up visible">
+                <i class="fas fa-shield-alt"></i>
+                <div>
+                    <strong>Requisito de Red (VPN):</strong> Para poder conectarse, obtener información (búsqueda semántica) e ingestar documentos en la <strong>bóveda de conocimiento de MongoDB Atlas</strong>, <strong>debes estar conectado por medio de la VPN corporativa</strong>.
+                </div>
+            </div>
+
+            <h2 class="fade-in-up" id="parte-1">Parte 1: Instalación desde el Chat de tu LLM (en 3 Prompts)</h2>
+            <p class="fade-in-up">Solo copia y pega los siguientes mensajes en el chat de tu asistente de IA.</p>
+
+            <h3 class="fade-in-up" id="paso-1">Paso 1: Pedirle al LLM que descargue e instale la Skill desde GitHub</h3>
+            <p class="fade-in-up">Copia y pega este prompt en el chat de tu LLM:</p>
+
+            <div class="prompt-card fade-in-up">
+                <div class="prompt-header">
+                    <span><i class="fas fa-terminal"></i> Prompt de instalación</span>
+                    <button class="copy-btn" onclick="copyPrompt(this)"><i class="far fa-copy"></i> Copiar Prompt</button>
+                </div>
+                <p class="prompt-text">Por favor instala la skill que se encuentra en el repositorio https://github.com/jacolinv/mongodb-vector-skill dentro de la carpeta .agents/skills/mongodb-vector-skill de mi espacio de trabajo (o clona el repositorio), instala sus dependencias de Node.js (npm install) y Python (requirements.txt), y registra su servidor MCP (mcp-server.js) en tu configuración de herramientas MCP como "mongodb-vector-skill".</p>
+            </div>
+
+            <blockquote class="fade-in-up">
+                <p><strong>¿Qué hará el LLM automáticamente por ti?</strong><br>
+                1. Clonará <code>https://github.com/jacolinv/mongodb-vector-skill</code>.<br>
+                2. Instalará los paquetes de Node.js (<code>@modelcontextprotocol/sdk</code>, <code>mongodb</code>, <code>voyageai</code>, <code>dotenv</code>) y Python.<br>
+                3. Registrará <code>mcp-server.js</code> como servidor MCP activo para que pueda usar las herramientas de búsqueda e ingesta.</p>
+            </blockquote>
+
+            <h3 class="fade-in-up" id="paso-2">Paso 2: Entregarle el archivo <code>.env</code> al LLM</h3>
+            <p class="fade-in-up">Si un compañero del equipo te compartió el archivo <code>.env</code> (o las variables de conexión), tienes <strong>dos opciones</strong> desde el chat:</p>
+
+            <h4 class="fade-in-up">Opción A — Si ya descargaste el archivo <code>.env</code> en tu computadora</h4>
+            <p class="fade-in-up">Dile al LLM dónde está para que él lo coloque en el lugar correcto:</p>
+
+            <div class="prompt-card fade-in-up">
+                <div class="prompt-header">
+                    <span><i class="fas fa-file-import"></i> Prompt (Opción A)</span>
+                    <button class="copy-btn" onclick="copyPrompt(this)"><i class="far fa-copy"></i> Copiar Prompt</button>
+                </div>
+                <p class="prompt-text">Toma el archivo .env que tengo en [ruta/donde/descargaste/.env] y cópialo dentro de .agents/skills/mongodb-vector-skill/.env.</p>
+            </div>
+
+            <h4 class="fade-in-up">Opción B — Pegar las variables directamente en el chat</h4>
+            <p class="fade-in-up">Pégale este mensaje al LLM con tus credenciales para que él mismo cree el archivo <code>.env</code>:</p>
+
+            <div class="prompt-card fade-in-up">
+                <div class="prompt-header">
+                    <span><i class="fas fa-key"></i> Prompt (Opción B)</span>
+                    <button class="copy-btn" onclick="copyPrompt(this)"><i class="far fa-copy"></i> Copiar Prompt</button>
+                </div>
+                <p class="prompt-text">Crea el archivo .agents/skills/mongodb-vector-skill/.env con las siguientes variables de entorno:
+
+MONGODB_URI="mongodb+srv://&lt;usuario&gt;:&lt;password&gt;@&lt;cluster&gt;.mongodb.net/"
+MONGODB_DB="knowledgeVectors"
+MONGODB_COLLECTION="knowledge"
+VECTOR_INDEX_NAME="vector_index"
+VOYAGE_API_KEY="&lt;tu_voyage_api_key&gt;"
+CHUNK_SIZE=1500
+CHUNK_OVERLAP_SENTENCES=1
+GOOGLE_CHAT_WEBHOOK_URL="&lt;webhook_url&gt;"
+ATLASSIAN_DOMAIN="https://liverpooldigital.atlassian.net/wiki/spaces/CU/overview?homepageId=1763246536"
+CONFLUENCE_ALLOWED_SPACES="CU"
+JIRA_ALLOWED_PROJECTS="CM,CPI,CUD,CUQ"
+ATLASSIAN_API_TOKEN="&lt;tu_atlassian_api_token&gt;"</p>
+            </div>
+
+            <h3 class="fade-in-up" id="paso-3">Paso 3: Pedirle al LLM que valide la conexión</h3>
+            <p class="fade-in-up">Asegúrate de tener <strong>activa tu VPN</strong> y envíale este prompt para confirmar que todo funciona:</p>
+
+            <div class="prompt-card fade-in-up">
+                <div class="prompt-header">
+                    <span><i class="fas fa-check-circle"></i> Prompt de verificación</span>
+                    <button class="copy-btn" onclick="copyPrompt(this)"><i class="far fa-copy"></i> Copiar Prompt</button>
+                </div>
+                <p class="prompt-text">Ejecuta una prueba rápida de la skill mongodb-vector-skill para confirmar que tienes acceso a:
+1. La bóveda de conocimiento en MongoDB Atlas (knowledgeVectors.knowledge)
+2. Confluence en el espacio CU (Comercio Unificado)
+3. Jira en los proyectos CM, CPI, CUD y CUQ</p>
+            </div>
+
+            <hr/>
+
+            <h2 class="fade-in-up" id="parte-2">Parte 2: Ejemplos de Uso en el Chat del LLM</h2>
+
+            <div class="skill-alert fade-in-up">
+                <i class="fas fa-lightbulb"></i>
+                <div>
+                    <strong>Recuerda indicar <code>/mongodb-vector-skill</code>:</strong> Al escribir tus consultas en el chat del LLM, antepón o incluye <strong><code>/mongodb-vector-skill</code></strong> para indicarle explícitamente al agente que ejecute la búsqueda o ingesta a través de esta skill (<code>search_knowledge</code>, <code>ingest_file</code>, <code>search_confluence</code>, <code>read_confluence_page</code>, <code>search_jira_issues</code>, <code>read_jira_issue</code>).
+                </div>
+            </div>
+
+            <h3 class="fade-in-up" id="uso-mongodb"><i class="fas fa-database" style="color: var(--primary);"></i> 1. Bóveda de Conocimiento en MongoDB Atlas (<code>knowledgeVectors.knowledge</code>)</h3>
+            <div class="vpn-alert fade-in-up">
+                <i class="fas fa-network-wired"></i>
+                <div>
+                    Recuerda mantener tu <strong>conexión a la VPN activa</strong> siempre que vayas a conectarte, obtener fragmentos de la bóveda de conocimiento de MongoDB o ingestar nuevos documentos.
+                </div>
+            </div>
+            <p class="fade-in-up">Aquí se almacena la documentación técnica, diagramas de arquitectura, PDFs, archivos de Office y código fuente vectorizado.</p>
+
+            <h4 class="fade-in-up">A. Consultar u obtener información de la bóveda (Búsqueda Semántica)</h4>
+
+            <div class="prompt-card fade-in-up">
+                <div class="prompt-header">
+                    <span><i class="fas fa-search"></i> Ejemplo 1 — Flujo de órdenes y pagos</span>
+                    <button class="copy-btn" onclick="copyPrompt(this)"><i class="far fa-copy"></i> Copiar Prompt</button>
+                </div>
+                <p class="prompt-text">/mongodb-vector-skill Busca en la bóveda de conocimiento de MongoDB cómo funciona el flujo de órdenes y pagos en Comercio Unificado.</p>
+            </div>
+
+            <div class="prompt-card fade-in-up">
+                <div class="prompt-header">
+                    <span><i class="fas fa-search"></i> Ejemplo 2 — Microservicios de checkout</span>
+                    <button class="copy-btn" onclick="copyPrompt(this)"><i class="far fa-copy"></i> Copiar Prompt</button>
+                </div>
+                <p class="prompt-text">/mongodb-vector-skill Consulta en la bóveda de MongoDB qué microservicios participan en el proceso de checkout y muéstrame los documentos fuente.</p>
+            </div>
+
+            <div class="prompt-card fade-in-up">
+                <div class="prompt-header">
+                    <span><i class="fas fa-filter"></i> Ejemplo 3 — Filtrado por tipo de archivo</span>
+                    <button class="copy-btn" onclick="copyPrompt(this)"><i class="far fa-copy"></i> Copiar Prompt</button>
+                </div>
+                <p class="prompt-text">/mongodb-vector-skill Busca en MongoDB únicamente en archivos de tipo markdown o pdf la documentación sobre arquitectura de inventarios.</p>
+            </div>
+
+            <h4 class="fade-in-up">B. Subir / Ingestar nuevos documentos a MongoDB desde el chat</h4>
+
+            <div class="prompt-card fade-in-up">
+                <div class="prompt-header">
+                    <span><i class="fas fa-cloud-upload-alt"></i> Ejemplo 1 — Ingestar un archivo individual</span>
+                    <button class="copy-btn" onclick="copyPrompt(this)"><i class="far fa-copy"></i> Copiar Prompt</button>
+                </div>
+                <p class="prompt-text">/mongodb-vector-skill Ingesta el archivo /ruta/a/mi/documento_arquitectura.pdf en la bóveda de conocimiento de MongoDB.</p>
+            </div>
+
+            <div class="prompt-card fade-in-up">
+                <div class="prompt-header">
+                    <span><i class="fas fa-folder-open"></i> Ejemplo 2 — Ingestar una carpeta completa</span>
+                    <button class="copy-btn" onclick="copyPrompt(this)"><i class="far fa-copy"></i> Copiar Prompt</button>
+                </div>
+                <p class="prompt-text">/mongodb-vector-skill Sube toda la carpeta /ruta/a/mis/documentos a la bóveda de conocimiento de MongoDB y avísame cuántos fragmentos se guardaron.</p>
+            </div>
+
+            <h3 class="fade-in-up" id="uso-confluence"><i class="fab fa-confluence" style="color: var(--accent);"></i> 2. Confluence (<code>CU</code> — Comercio Unificado)</h3>
+            <p class="fade-in-up">El LLM consulta en tiempo real las páginas de Confluence dentro del espacio autorizado <strong><code>CU</code></strong>.</p>
+
+            <h4 class="fade-in-up">A. Buscar páginas y documentación en Confluence</h4>
+
+            <div class="prompt-card fade-in-up">
+                <div class="prompt-header">
+                    <span><i class="fas fa-search"></i> Ejemplo 1 — Pasarelas de pago o devoluciones</span>
+                    <button class="copy-btn" onclick="copyPrompt(this)"><i class="far fa-copy"></i> Copiar Prompt</button>
+                </div>
+                <p class="prompt-text">/mongodb-vector-skill Busca en Confluence (espacio CU) todas las páginas relacionadas con pasarelas de pago o devoluciones.</p>
+            </div>
+
+            <div class="prompt-card fade-in-up">
+                <div class="prompt-header">
+                    <span><i class="fas fa-list"></i> Ejemplo 2 — Páginas recientes de Punto de Venta</span>
+                    <button class="copy-btn" onclick="copyPrompt(this)"><i class="far fa-copy"></i> Copiar Prompt</button>
+                </div>
+                <p class="prompt-text">/mongodb-vector-skill Lista las páginas de Confluence creadas o actualizadas recientemente en el espacio CU sobre arquitectura de Punto de Venta.</p>
+            </div>
+
+            <div class="prompt-card fade-in-up">
+                <div class="prompt-header">
+                    <span><i class="fas fa-code"></i> Ejemplo 3 — Búsqueda con CQL</span>
+                    <button class="copy-btn" onclick="copyPrompt(this)"><i class="far fa-copy"></i> Copiar Prompt</button>
+                </div>
+                <p class="prompt-text">/mongodb-vector-skill Busca en Confluence usando CQL: space = "CU" AND type = page AND title ~ "Arquitectura".</p>
+            </div>
+
+            <h4 class="fade-in-up">B. Leer el contenido completo de una página de Confluence</h4>
+
+            <div class="prompt-card fade-in-up">
+                <div class="prompt-header">
+                    <span><i class="fas fa-file-alt"></i> Ejemplo 1 — Leer página por ID</span>
+                    <button class="copy-btn" onclick="copyPrompt(this)"><i class="far fa-copy"></i> Copiar Prompt</button>
+                </div>
+                <p class="prompt-text">/mongodb-vector-skill Lee la página de Confluence con ID 5370806273 y hazme un resumen de los puntos clave y acuerdos.</p>
+            </div>
+
+            <div class="prompt-card fade-in-up">
+                <div class="prompt-header">
+                    <span><i class="fas fa-table"></i> Ejemplo 2 — Extraer tabla de servicios</span>
+                    <button class="copy-btn" onclick="copyPrompt(this)"><i class="far fa-copy"></i> Copiar Prompt</button>
+                </div>
+                <p class="prompt-text">/mongodb-vector-skill Busca la página principal de Comercio Unificado en Confluence, léela completa y extrae la tabla de servicios.</p>
+            </div>
+
+            <h3 class="fade-in-up" id="uso-jira"><i class="fab fa-jira" style="color: var(--accent);"></i> 3. Jira (<code>CM</code>, <code>CPI</code>, <code>CUD</code>, <code>CUQ</code> — Comercio Unificado)</h3>
+            <p class="fade-in-up">El LLM consulta tickets, historias de usuario, épicas y bugs en tiempo real dentro de los proyectos autorizados:</p>
+            <div class="badge-group fade-in-up">
+                <span class="scope-badge">CM — Comercio Unificado</span>
+                <span class="scope-badge">CPI — Comercio Unificado Punto de Venta</span>
+                <span class="scope-badge">CUD — Comercio Unificado Desarrollo</span>
+                <span class="scope-badge">CUQ — Comercio Unificado QA</span>
+            </div>
+
+            <h4 class="fade-in-up">A. Buscar tickets e incidencias en Jira</h4>
+
+            <div class="prompt-card fade-in-up">
+                <div class="prompt-header">
+                    <span><i class="fas fa-tasks"></i> Ejemplo 1 — Últimos tickets en CUD</span>
+                    <button class="copy-btn" onclick="copyPrompt(this)"><i class="far fa-copy"></i> Copiar Prompt</button>
+                </div>
+                <p class="prompt-text">Busca en Jira los últimos 10 tickets actualizados del proyecto CUD y muéstrame su clave, resumen, estado y responsable.</p>
+            </div>
+
+            <div class="prompt-card fade-in-up">
+                <div class="prompt-header">
+                    <span><i class="fas fa-bug"></i> Ejemplo 2 — Bugs abiertos en CUQ y CPI</span>
+                    <button class="copy-btn" onclick="copyPrompt(this)"><i class="far fa-copy"></i> Copiar Prompt</button>
+                </div>
+                <p class="prompt-text">Busca en Jira todos los bugs abiertos o en progreso en los proyectos CUQ y CPI.</p>
+            </div>
+
+            <div class="prompt-card fade-in-up">
+                <div class="prompt-header">
+                    <span><i class="fas fa-code"></i> Ejemplo 3 — Búsqueda con JQL</span>
+                    <button class="copy-btn" onclick="copyPrompt(this)"><i class="far fa-copy"></i> Copiar Prompt</button>
+                </div>
+                <p class="prompt-text">Ejecuta esta búsqueda JQL en Jira: project IN (CM, CUD) AND status != Done ORDER BY updated DESC.</p>
+            </div>
+
+            <h4 class="fade-in-up">B. Leer el detalle y comentarios de un ticket específico</h4>
+
+            <div class="prompt-card fade-in-up">
+                <div class="prompt-header">
+                    <span><i class="fas fa-ticket-alt"></i> Ejemplo 1 — Detalle y comentarios de CM-3</span>
+                    <button class="copy-btn" onclick="copyPrompt(this)"><i class="far fa-copy"></i> Copiar Prompt</button>
+                </div>
+                <p class="prompt-text">Lee el detalle completo del ticket CM-3 en Jira, incluyendo su descripción y los últimos comentarios.</p>
+            </div>
+
+            <div class="prompt-card fade-in-up">
+                <div class="prompt-header">
+                    <span><i class="fas fa-check-square"></i> Ejemplo 2 — Criterios de aceptación de CUD-125</span>
+                    <button class="copy-btn" onclick="copyPrompt(this)"><i class="far fa-copy"></i> Copiar Prompt</button>
+                </div>
+                <p class="prompt-text">Revisa el ticket CUD-125 en Jira y dime qué criterios de aceptación tiene y cuál es su estado actual.</p>
+            </div>
+
+            <h3 class="fade-in-up" id="uso-combinado"><i class="fas fa-layer-group" style="color: var(--primary);"></i> 4. Consultas Combinadas (MongoDB + Confluence + Jira en un solo Prompt)</h3>
+            <p class="fade-in-up">El mayor valor de la skill es pedirle al LLM que cruce las tres fuentes en una sola conversación (recuerda tener la <strong>VPN activa</strong> para el acceso a MongoDB):</p>
+
+            <div class="prompt-card fade-in-up">
+                <div class="prompt-header">
+                    <span><i class="fas fa-magic"></i> Ejemplo 1 — Plan de implementación cruzado</span>
+                    <button class="copy-btn" onclick="copyPrompt(this)"><i class="far fa-copy"></i> Copiar Prompt</button>
+                </div>
+                <p class="prompt-text">Revisa el ticket CM-3 en Jira, busca en Confluence (CU) la documentación funcional asociada y consulta en la bóveda de conocimiento de MongoDB los componentes técnicos relacionados para darme un plan de implementación.</p>
+            </div>
+
+            <div class="prompt-card fade-in-up">
+                <div class="prompt-header">
+                    <span><i class="fas fa-balance-scale"></i> Ejemplo 2 — Comparativa Confluence vs MongoDB vs Jira</span>
+                    <button class="copy-btn" onclick="copyPrompt(this)"><i class="far fa-copy"></i> Copiar Prompt</button>
+                </div>
+                <p class="prompt-text">Compara lo que dice la especificación en Confluence (CU) sobre el módulo de cobro contra la documentación técnica indexada en MongoDB y dime si hay tickets abiertos en Jira (CUD o CUQ) sobre ese tema.</p>
+            </div>
+
+            <div class="prompt-card fade-in-up">
+                <div class="prompt-header">
+                    <span><i class="fas fa-archive"></i> Ejemplo 3 — De Confluence a la bóveda de MongoDB</span>
+                    <button class="copy-btn" onclick="copyPrompt(this)"><i class="far fa-copy"></i> Copiar Prompt</button>
+                </div>
+                <p class="prompt-text">Lee la página 5370806273 de Confluence y, si es relevante para el equipo, guárdala/ingéstala también en la bóveda de conocimientos de MongoDB.</p>
+            </div>
+
+            <hr/>
+
+            <h2 class="fade-in-up" id="troubleshooting">Solución Rápida de Problemas (Pídeselo al LLM)</h2>
+            <p class="fade-in-up">Si algo falla, verifica primero estos dos puntos o pídele a tu LLM que lo diagnostique:</p>
+            <ul class="fade-in-up">
+                <li><strong>Si no puedes conectarte, consultar o ingestar documentos en MongoDB Atlas (timeout / error de red):</strong><br>
+                Verifica que estés <strong>conectado a la VPN</strong>. Sin la VPN activa, el clúster <code>gcp-knowledge-mongodb-d.2mbsf.mongodb.net</code> no permitirá la conexión para obtener ni ingestar documentos.</li>
+                <li><strong>Si agregaste o actualizaste credenciales en <code>.env</code>:</strong></li>
+            </ul>
+
+            <div class="prompt-card fade-in-up">
+                <div class="prompt-header">
+                    <span><i class="fas fa-sync-alt"></i> Prompt para Recargar Configuración .env</span>
+                    <button class="copy-btn" onclick="copyPrompt(this)"><i class="far fa-copy"></i> Copiar Prompt</button>
+                </div>
+                <p class="prompt-text">Acabo de actualizar el archivo .env de mongodb-vector-skill, por favor reinicia o recarga el servidor MCP y vuelve a probar la conexión.</p>
+            </div>
+
+            <div class="top-nav-banner fade-in-up" style="margin-top: 50px;">
+                <div class="banner-text">
+                    <i class="fas fa-book-open" style="color: var(--primary); font-size: 1.2rem;"></i>
+                    <span>¿Buscas los diagramas de arquitectura, detalles de Voyage AI y esquema de MongoDB?</span>
+                </div>
+                <a href="index.html" class="banner-btn">
+                    <i class="fas fa-arrow-right"></i> Ver Documentación Técnica Completa (index.html)
+                </a>
+            </div>
+        </div>
+    </main>
+</div>
+
+<div id="btt" title="Volver arriba"><i class="fas fa-arrow-up"></i></div>
+
+<script>
+    function copyPrompt(btn) {
+        const card = btn.closest('.prompt-card');
+        const text = card.querySelector('.prompt-text').innerText;
+        navigator.clipboard.writeText(text).then(() => {
+            const originalHTML = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-check"></i> ¡Copiado!';
+            btn.style.background = 'var(--primary)';
+            btn.style.color = '#0b0f19';
+            setTimeout(() => {
+                btn.innerHTML = originalHTML;
+                btn.style.background = '';
+                btn.style.color = '';
+            }, 2000);
+        });
+    }
+
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('visible');
+            }
+        });
+    }, { threshold: 0.1, rootMargin: "0px 0px -40px 0px" });
+
+    document.querySelectorAll('.fade-in-up').forEach((el) => observer.observe(el));
+
+    const tocLinks = document.querySelectorAll('.toc-list a');
+    const sections = document.querySelectorAll('h2, h3');
+    
+    const tocObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                const id = entry.target.getAttribute('id');
+                tocLinks.forEach(link => {
+                    link.classList.remove('active');
+                    if (link.getAttribute('href') === '#' + id) {
+                        link.classList.add('active');
+                    }
+                });
+            }
+        });
+    }, { rootMargin: "-20% 0px -75% 0px" });
+
+    sections.forEach(section => tocObserver.observe(section));
+
+    tocLinks.forEach(link => {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            const targetId = this.getAttribute('href').substring(1);
+            const targetEl = document.getElementById(targetId);
+            window.scrollTo({ top: targetEl.offsetTop - 40, behavior: 'smooth' });
+        });
+    });
+
+    const btt = document.getElementById('btt');
+    window.addEventListener('scroll', () => {
+        if (window.scrollY > 400) btt.classList.add('show');
+        else btt.classList.remove('show');
+    });
+
+    btt.addEventListener('click', () => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+</script>
+
+</body>
+</html>
