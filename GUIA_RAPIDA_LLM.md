@@ -68,7 +68,7 @@ Asegúrate de tener **activa tu VPN** y envíale este prompt para confirmar que 
 
 > **Prompt de verificación:**
 > ```text
-> Ejecuta una prueba rápida de la skill mongodb-vector-skill para confirmar que tienes acceso a:
+> /mongodb-vector-skill Ejecuta una prueba rápida de la skill mongodb-vector-skill para confirmar que tienes acceso a:
 > 1. La bóveda de conocimiento en MongoDB Atlas (knowledgeVectors.knowledge)
 > 2. Confluence en el espacio CU (Comercio Unificado)
 > 3. Jira en los proyectos CM, CPI, CUD y CUQ
@@ -130,14 +130,14 @@ El LLM consulta tickets, historias de usuario, épicas y bugs en tiempo real den
 
 #### A. Buscar tickets e incidencias en Jira
 > **Prompts de ejemplo:**
-> - *"Busca en Jira los últimos 10 tickets actualizados del proyecto `CUD` y muéstrame su clave, resumen, estado y responsable."*
-> - *"Busca en Jira todos los bugs abiertos o en progreso en los proyectos `CUQ` y `CPI`."*
-> - *"Ejecuta esta búsqueda JQL en Jira: `project IN (CM, CUD) AND status != Done ORDER BY updated DESC`."*
+> - `"/mongodb-vector-skill Busca en Jira los últimos 10 tickets actualizados del proyecto CUD y muéstrame su clave, resumen, estado y responsable."`
+> - `"/mongodb-vector-skill Busca en Jira todos los bugs abiertos o en progreso en los proyectos CUQ y CPI."`
+> - `"/mongodb-vector-skill Ejecuta esta búsqueda JQL en Jira: project IN (CM, CUD) AND status != Done ORDER BY updated DESC."`
 
 #### B. Leer el detalle y comentarios de un ticket específico
 > **Prompts de ejemplo:**
-> - *"Lee el detalle completo del ticket `CM-3` en Jira, incluyendo su descripción y los últimos comentarios."*
-> - *"Revisa el ticket `CUD-125` en Jira y dime qué criterios de aceptación tiene y cuál es su estado actual."*
+> - `"/mongodb-vector-skill Lee el detalle completo del ticket CM-3 en Jira, incluyendo su descripción y los últimos comentarios."`
+> - `"/mongodb-vector-skill Revisa el ticket CUD-125 en Jira y dime qué criterios de aceptación tiene y cuál es su estado actual."`
 
 ---
 
@@ -146,9 +146,9 @@ El LLM consulta tickets, historias de usuario, épicas y bugs en tiempo real den
 El mayor valor de la skill es pedirle al LLM que cruce las tres fuentes en una sola conversación (recuerda tener la **VPN activa** para el acceso a MongoDB):
 
 > **Prompts combinados de ejemplo:**
-> - *"Revisa el ticket `CM-3` en Jira, busca en Confluence (`CU`) la documentación funcional asociada y consulta en la bóveda de conocimiento de MongoDB los componentes técnicos relacionados para darme un plan de implementación."*
-> - *"Compara lo que dice la especificación en Confluence (`CU`) sobre el módulo de cobro contra la documentación técnica indexada en MongoDB y dime si hay tickets abiertos en Jira (`CUD` o `CUQ`) sobre ese tema."*
-> - *"Lee la página `5370806273` de Confluence y, si es relevante para el equipo, guárdala/ingéstala también en la bóveda de conocimientos de MongoDB."*
+> - `"/mongodb-vector-skill Revisa el ticket CM-3 en Jira, busca en Confluence (CU) la documentación funcional asociada y consulta en la bóveda de conocimiento de MongoDB los componentes técnicos relacionados para darme un plan de implementación."`
+> - `"/mongodb-vector-skill Compara lo que dice la especificación en Confluence (CU) sobre el módulo de cobro contra la documentación técnica indexada en MongoDB y dime si hay tickets abiertos en Jira (CUD o CUQ) sobre ese tema."`
+> - `"/mongodb-vector-skill Lee la página 5370806273 de Confluence y, si es relevante para el equipo, guárdala/ingéstala también en la bóveda de conocimientos de MongoDB."`
 
 ---
 
@@ -159,4 +159,4 @@ Si algo falla, verifica primero estos dos puntos o pídele a tu LLM que lo diagn
 - **Si no puedes conectarte, consultar o ingestar documentos en MongoDB Atlas (timeout / error de red):**
   - Verifica que estés **conectado a la VPN**. Sin la VPN activa, el clúster `gcp-knowledge-mongodb-d.2mbsf.mongodb.net` no permitirá la conexión para obtener ni ingestar documentos.
 - **Si agregaste o actualizaste credenciales en `.env`:**
-  > *"Acabo de actualizar el archivo `.env` de `mongodb-vector-skill`, por favor reinicia o recarga el servidor MCP y vuelve a probar la conexión."*
+  > `"/mongodb-vector-skill Acabo de actualizar el archivo .env de mongodb-vector-skill, por favor reinicia o recarga el servidor MCP y vuelve a probar la conexión."`

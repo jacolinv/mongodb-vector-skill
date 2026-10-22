@@ -341,7 +341,7 @@
                 <span>Estás viendo la <strong>Guía Rápida — Instalar y Usar mongodb-vector-skill desde el Chat de tu LLM</strong>.</span>
             </div>
             <a href="index.html" class="banner-btn">
-                <i class="fas fa-arrow-left"></i> Ir a Documentación Técnica Principal (index.html)
+                <i class="fas fa-arrow-left"></i> Ir a Documentación Técnica Principal
             </a>
         </div>
 
@@ -423,7 +423,7 @@ ATLASSIAN_API_TOKEN="&lt;tu_atlassian_api_token&gt;"</p>
                     <span><i class="fas fa-check-circle"></i> Prompt de verificación</span>
                     <button class="copy-btn" onclick="copyPrompt(this)"><i class="far fa-copy"></i> Copiar Prompt</button>
                 </div>
-                <p class="prompt-text">Ejecuta una prueba rápida de la skill mongodb-vector-skill para confirmar que tienes acceso a:
+                <p class="prompt-text">/mongodb-vector-skill Ejecuta una prueba rápida de la skill mongodb-vector-skill para confirmar que tienes acceso a:
 1. La bóveda de conocimiento en MongoDB Atlas (knowledgeVectors.knowledge)
 2. Confluence en el espacio CU (Comercio Unificado)
 3. Jira en los proyectos CM, CPI, CUD y CUQ</p>
@@ -556,7 +556,7 @@ ATLASSIAN_API_TOKEN="&lt;tu_atlassian_api_token&gt;"</p>
                     <span><i class="fas fa-tasks"></i> Ejemplo 1 — Últimos tickets en CUD</span>
                     <button class="copy-btn" onclick="copyPrompt(this)"><i class="far fa-copy"></i> Copiar Prompt</button>
                 </div>
-                <p class="prompt-text">Busca en Jira los últimos 10 tickets actualizados del proyecto CUD y muéstrame su clave, resumen, estado y responsable.</p>
+                <p class="prompt-text">/mongodb-vector-skill Busca en Jira los últimos 10 tickets actualizados del proyecto CUD y muéstrame su clave, resumen, estado y responsable.</p>
             </div>
 
             <div class="prompt-card fade-in-up">
@@ -564,7 +564,7 @@ ATLASSIAN_API_TOKEN="&lt;tu_atlassian_api_token&gt;"</p>
                     <span><i class="fas fa-bug"></i> Ejemplo 2 — Bugs abiertos en CUQ y CPI</span>
                     <button class="copy-btn" onclick="copyPrompt(this)"><i class="far fa-copy"></i> Copiar Prompt</button>
                 </div>
-                <p class="prompt-text">Busca en Jira todos los bugs abiertos o en progreso en los proyectos CUQ y CPI.</p>
+                <p class="prompt-text">/mongodb-vector-skill Busca en Jira todos los bugs abiertos o en progreso en los proyectos CUQ y CPI.</p>
             </div>
 
             <div class="prompt-card fade-in-up">
@@ -572,7 +572,7 @@ ATLASSIAN_API_TOKEN="&lt;tu_atlassian_api_token&gt;"</p>
                     <span><i class="fas fa-code"></i> Ejemplo 3 — Búsqueda con JQL</span>
                     <button class="copy-btn" onclick="copyPrompt(this)"><i class="far fa-copy"></i> Copiar Prompt</button>
                 </div>
-                <p class="prompt-text">Ejecuta esta búsqueda JQL en Jira: project IN (CM, CUD) AND status != Done ORDER BY updated DESC.</p>
+                <p class="prompt-text">/mongodb-vector-skill Ejecuta esta búsqueda JQL en Jira: project IN (CM, CUD) AND status != Done ORDER BY updated DESC.</p>
             </div>
 
             <h4 class="fade-in-up">B. Leer el detalle y comentarios de un ticket específico</h4>
@@ -582,7 +582,7 @@ ATLASSIAN_API_TOKEN="&lt;tu_atlassian_api_token&gt;"</p>
                     <span><i class="fas fa-ticket-alt"></i> Ejemplo 1 — Detalle y comentarios de CM-3</span>
                     <button class="copy-btn" onclick="copyPrompt(this)"><i class="far fa-copy"></i> Copiar Prompt</button>
                 </div>
-                <p class="prompt-text">Lee el detalle completo del ticket CM-3 en Jira, incluyendo su descripción y los últimos comentarios.</p>
+                <p class="prompt-text">/mongodb-vector-skill Lee el detalle completo del ticket CM-3 en Jira, incluyendo su descripción y los últimos comentarios.</p>
             </div>
 
             <div class="prompt-card fade-in-up">
@@ -590,7 +590,7 @@ ATLASSIAN_API_TOKEN="&lt;tu_atlassian_api_token&gt;"</p>
                     <span><i class="fas fa-check-square"></i> Ejemplo 2 — Criterios de aceptación de CUD-125</span>
                     <button class="copy-btn" onclick="copyPrompt(this)"><i class="far fa-copy"></i> Copiar Prompt</button>
                 </div>
-                <p class="prompt-text">Revisa el ticket CUD-125 en Jira y dime qué criterios de aceptación tiene y cuál es su estado actual.</p>
+                <p class="prompt-text">/mongodb-vector-skill Revisa el ticket CUD-125 en Jira y dime qué criterios de aceptación tiene y cuál es su estado actual.</p>
             </div>
 
             <h3 class="fade-in-up" id="uso-combinado"><i class="fas fa-layer-group" style="color: var(--primary);"></i> 4. Consultas Combinadas (MongoDB + Confluence + Jira en un solo Prompt)</h3>
@@ -601,7 +601,7 @@ ATLASSIAN_API_TOKEN="&lt;tu_atlassian_api_token&gt;"</p>
                     <span><i class="fas fa-magic"></i> Ejemplo 1 — Plan de implementación cruzado</span>
                     <button class="copy-btn" onclick="copyPrompt(this)"><i class="far fa-copy"></i> Copiar Prompt</button>
                 </div>
-                <p class="prompt-text">Revisa el ticket CM-3 en Jira, busca en Confluence (CU) la documentación funcional asociada y consulta en la bóveda de conocimiento de MongoDB los componentes técnicos relacionados para darme un plan de implementación.</p>
+                <p class="prompt-text">/mongodb-vector-skill Revisa el ticket CM-3 en Jira, busca en Confluence (CU) la documentación funcional asociada y consulta en la bóveda de conocimiento de MongoDB los componentes técnicos relacionados para darme un plan de implementación.</p>
             </div>
 
             <div class="prompt-card fade-in-up">
@@ -609,7 +609,7 @@ ATLASSIAN_API_TOKEN="&lt;tu_atlassian_api_token&gt;"</p>
                     <span><i class="fas fa-balance-scale"></i> Ejemplo 2 — Comparativa Confluence vs MongoDB vs Jira</span>
                     <button class="copy-btn" onclick="copyPrompt(this)"><i class="far fa-copy"></i> Copiar Prompt</button>
                 </div>
-                <p class="prompt-text">Compara lo que dice la especificación en Confluence (CU) sobre el módulo de cobro contra la documentación técnica indexada en MongoDB y dime si hay tickets abiertos en Jira (CUD o CUQ) sobre ese tema.</p>
+                <p class="prompt-text">/mongodb-vector-skill Compara lo que dice la especificación en Confluence (CU) sobre el módulo de cobro contra la documentación técnica indexada en MongoDB y dime si hay tickets abiertos en Jira (CUD o CUQ) sobre ese tema.</p>
             </div>
 
             <div class="prompt-card fade-in-up">
@@ -617,7 +617,7 @@ ATLASSIAN_API_TOKEN="&lt;tu_atlassian_api_token&gt;"</p>
                     <span><i class="fas fa-archive"></i> Ejemplo 3 — De Confluence a la bóveda de MongoDB</span>
                     <button class="copy-btn" onclick="copyPrompt(this)"><i class="far fa-copy"></i> Copiar Prompt</button>
                 </div>
-                <p class="prompt-text">Lee la página 5370806273 de Confluence y, si es relevante para el equipo, guárdala/ingéstala también en la bóveda de conocimientos de MongoDB.</p>
+                <p class="prompt-text">/mongodb-vector-skill Lee la página 5370806273 de Confluence y, si es relevante para el equipo, guárdala/ingéstala también en la bóveda de conocimientos de MongoDB.</p>
             </div>
 
             <hr/>
@@ -635,7 +635,7 @@ ATLASSIAN_API_TOKEN="&lt;tu_atlassian_api_token&gt;"</p>
                     <span><i class="fas fa-sync-alt"></i> Prompt para Recargar Configuración .env</span>
                     <button class="copy-btn" onclick="copyPrompt(this)"><i class="far fa-copy"></i> Copiar Prompt</button>
                 </div>
-                <p class="prompt-text">Acabo de actualizar el archivo .env de mongodb-vector-skill, por favor reinicia o recarga el servidor MCP y vuelve a probar la conexión.</p>
+                <p class="prompt-text">/mongodb-vector-skill Acabo de actualizar el archivo .env de mongodb-vector-skill, por favor reinicia o recarga el servidor MCP y vuelve a probar la conexión.</p>
             </div>
 
             <div class="top-nav-banner fade-in-up" style="margin-top: 50px;">
@@ -644,7 +644,7 @@ ATLASSIAN_API_TOKEN="&lt;tu_atlassian_api_token&gt;"</p>
                     <span>¿Buscas los diagramas de arquitectura, detalles de Voyage AI y esquema de MongoDB?</span>
                 </div>
                 <a href="index.html" class="banner-btn">
-                    <i class="fas fa-arrow-right"></i> Ver Documentación Técnica Completa (index.html)
+                    <i class="fas fa-arrow-right"></i> Ver Documentación Técnica Completa
                 </a>
             </div>
         </div>
